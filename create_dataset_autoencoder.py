@@ -9,28 +9,90 @@ Fecha: Por definir
 import os
 import cv2
 import numpy as np
+import sys
 
 class GenDataAutoencoder:
     """
     Genera el conjunto de datos
     """
-    def __init__(self):
-        self.pth        = os.path.dirname(os.path.abspath(__file__))        # Obtiene la ruta de la carpeta actual
-        self.pth_data   = os.path.join(self.pth, 'data')                    # Obtiene la ruta de la carpeta donde se encuentran las imagenes de entrenamiento
-        self.imgs       = tuple(os.listdir(self.pth_data))                  # Crea una tupla con las rutas de las imágenes
-        self.pth_save   = os.path.join(self.pth, 'datasets', 'autoencoder') # Crea la ruta donde se guardará el dataset para entrenar el autoencoder
+    def __init__(self, dim, pth_data, pth_save):
+        self.dim        = dim                               # Dimensión de las secciones de los datos de entrenamiento
+        self.pth_data   = pth_data                          # Obtiene la ruta de la carpeta donde se encuentran las imagenes de entrenamiento
+        self.imgs       = tuple(os.listdir(self.pth_data))  # Crea una tupla con las rutas de las imágenes
+        self.pth_save   = pth_save                          # Crea la ruta donde se guardará el dataset para entrenar el autoencoder
+
+    def error_message(self, text):
+        """
+        Define un formato para los mensajes de error
+        """
+        print(f'\n********************************\nError:\n{text}\n********************************\n')
+        sys.exit()
+
+    def warning_message(self, text):
+        """
+        Define un formato para los mensajes de advertencia
+        """
+        print(f'\n********************************\nWarning:\n{text}\n********************************\n')
+
+    def method_menssage(self, method):
+        print(f'\nEjecutando {method}.')
+        
+    def cheack_values(self):
+        """
+        Evalua los posibles errores al ingresar los argumentos de la clase
+        """
+        if not isinstance(self.dim, int):
+            text = 'La dimensión de los datos debe ser de tipo entero.'
+            self.error_message(text)
+        elif 0 < self.dim < 25:
+            text = 'La dimensión de los datos es demasiado baja, se sujiere un valor mínimo de 25. Tenga en cuenta la dimensión de las imágenes.'
+            self.warning_message(text)
+        elif self.dim > 200:
+            text = 'La dimensión de los datos es demasiado alta, se sujiere un valor menor a 200. Tenga en cuenta la dimensión de las imágenes.'
+            self.error_message(text)
+        elif self.dim < 0:
+            text = 'La dimensión de los datos no puede ser negativa.'
+            self.error_message(text)
+        else:
+            pass
+
+        if not os.path.exists(self.pth_data):
+            text = f'La ruta {self.pth_data} no existe.'
+            self.error_message(text)
+        elif not os.path.exists(self.pth_save):
+            text = f'La ruta {self.pth_save} no existe.'
+            self.error_message(text)
+        elif not os.path.isdir(self.pth_data):
+            text = f'La ruta {self.pth_data} debe ser una carpeta.'
+            self.error_message(text)
+        elif not os.path.isdir(self.pth_save):
+            text = f'La ruta {self.pth_save} debe ser una carpeta.'
+            self.error_message(text)
+        else:
+            pass
+        
+        extensions = ['.tif', '.jpg', '.jpeg', '.png', '.gif', '.bmp']
+        for img in self.imgs:                                               # Itera subre la tupla con los nombres de las imágenes
+            pth_img = os.path.join(self.pth_data, img)
+            ext = os.path.splitext(pth_img)[1].lower()
+            if ext not in extensions:
+                text = (f'La ruta {pth_img} debe ser una imagen del formato tif, jpg, jpeg, png, gif o bmp.')
+                self.error_message(text)
+            else:
+                pass
 
     def get_imgs(self):
         """
         Obtiene la ruta y carga las imágenes una por una, abriendola y obteniendo sus dimenciones.
         """
+        self.method_menssage(self.get_imgs.__name__)
         for img in self.imgs:                                               # Itera subre la tupla con los nombres de las imágenes
             pth_img = os.path.join(self.pth_data, img)                      # Obtiene la ruta de la imagen            
             img     = cv2.cvtColor(cv2.imread(pth_img), cv2.COLOR_BGR2RGB)  # Abre la imágen y transforma de BGR a RGB
             w, h    = img.shape[1], img.shape[0]                            # Obtiene el ancho (w) y el alto (h) en pixeles
             yield img, w, h
     
-    def make_data(img, h, w, dim):
+    def make_data(self, img, w, h, dim):
         """
         Divide ima imagen de entrada en secciones de imágenes mas pequeñas, dados los parámetros.
          
@@ -39,8 +101,8 @@ class GenDataAutoencoder:
             w: Ancho de la imágen (int).
             dim: Dimensión de la sección (int).
         """
+        self.method_menssage(self.make_data.__name__)
         sections = []
-        
         for row in range(0, h, dim):
             for col in range(0, w, dim):
                 section = img[row:row+dim, col:col+dim]     # Itera sobre la imagen de entrada, extrayendo secciones de dimensión (dim,dim)
@@ -50,11 +112,26 @@ class GenDataAutoencoder:
 
         return sections
         
-    def define_data(name, stack):
+    def save_data(self, pth_save, stack):
         """
         Se encarga de transformar una lista en un arreglo de guardarlo en un archivo npy, 
         en la ruta especificada por el parámetro name, se espera que se ingrese una lista con las
         secciones de todas las imágenes contenidas en la carpeta de dataset.
         """
-        dataset = np.array(stack)       # Transforma el objeto list a nd.array
-        np.save(name+'.npy', dataset)   # Guarde el arreglo
+        self.method_menssage(self.save_data.__name__)
+        dataset = np.array(stack)   # Transforma el objeto list a nd.array
+        np.save(pth_save, dataset)  # Guarde el arreglo
+
+    def gen_data(self):
+        """
+        Crea un flujo de trabajo para crear el conjunto de datos aplicando los metodos de esta clase
+        """
+        self.cheack_values()
+        stack = []
+        for data in self.get_imgs():
+            img, w, h = data                                                # Obtiene los datos para invocar make_data
+            sections = self.make_data(img, w, h, self.dim)                  # Genera las secciones (muestras)
+            stack.append(sections)                                          # Se ingresa cada sección a una lista
+        pth_save = os.path.join(self.pth_save, f'dataset{self.dim}.npy')    # Crea la ruta de guardado con el archivo npy
+        self.save_data(pth_save, stack)                                   # Todas las secciones se guardan como ndarray
+        print(f'\nDataset generado con éxito en "{pth_save}".\n')
