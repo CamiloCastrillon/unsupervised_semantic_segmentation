@@ -1,8 +1,10 @@
-import os
-extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tif']
-ruta = 'c:/camilo/data/img.tif'
-ext = os.path.splitext(ruta)[1].lower()
-if ext in extensions:
-    text = (f'La ruta {ruta} no es un archivo de imagen.')
-else:
-    pass
+dim = 50
+cheack_dim = dim
+it = 0
+for i in range(3):
+    it +=1
+    print(it)
+    cheack_dim /= 2
+    print(round(cheack_dim))
+    if round(cheack_dim) < 3:
+        print(f'error -> {dim} : {round(cheack_dim)}')
