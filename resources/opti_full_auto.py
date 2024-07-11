@@ -2,10 +2,6 @@ import os
 import optuna
 import numpy as np
 from resources.message import error_message, warning_message, method_menssage
-import tensorflow as tf
-from keras._tf_keras.keras import layers, optimizers, initializers, models, regularizers
-from keras._tf_keras.keras.layers import Dropout
-from keras._tf_keras.keras.callbacks import EarlyStopping
 
 class OptimizeFullAuto:
     """
@@ -128,5 +124,3 @@ class OptimizeFullAuto:
         epochs          = trial.suggest_int('epochs', self.ep_min, self.ep_max) 
         batch_size      = trial.suggest_int('batch_size', self.ba_min, self.ba_max)
         kernels         = self.ink
-        
-        full_auto = models.Sequential(name='full_autoencoder')
