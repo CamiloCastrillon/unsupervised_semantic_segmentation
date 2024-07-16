@@ -48,7 +48,7 @@ class OptimizeFullAuto:
         """
         Evalua los posibles errores al ingresar los argumentos de la clase
         """
-        method_menssage(self.check_values.__name__)
+        method_menssage(self.check_values.__name__, 'Verifica los posibles errores y advertencias al ingresar los argumentos de la clase OptimizeFullAuto')
         # Evalua el tipo de la variable dataset
         self.check_type(self.dataset, np.ndarray, 'dataset')
         if not self.dataset.ndim == 5:

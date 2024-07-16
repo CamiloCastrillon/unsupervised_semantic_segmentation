@@ -6,7 +6,7 @@ from resources.message import error_message, warning_message, method_menssage
 import random
 
 class CreateFullAuto:
-    def __init__(self, kernels, dim, number_layers, mode_l1, mode_l2, param_l1, param_l2, mode_do, param_do):
+    def __init__(self, kernels, dim, number_layers, mode_l1, mode_l2, param_l1, param_l2, mode_do, param_do, lr):
         
         self.full_auto      = models.Sequential(name='full_autoencoder')
         self.kernels        = kernels
@@ -18,6 +18,7 @@ class CreateFullAuto:
         self.param_l2       = param_l2
         self.mode_do        = mode_do
         self.param_do       = param_do
+        self.lr             = lr
 
     def check_values(self):    
         # Evalua la variable mode_l1, mode_l2 y mode_do
@@ -104,7 +105,7 @@ class CreateFullAuto:
         elif self.mode_do == None:
             do = None
 
-    def architecture(self):
+    def create_model(self):
         self.check_values()
         for lay in range(1, self.number_layers+1):
             if lay == 1 :
@@ -136,3 +137,7 @@ class CreateFullAuto:
             self.kernels -= self.kernels//2
 
         return self.full_auto
+
+    def compile_model(self):
+        optimizer_autoencoder = optimizers.Adam(learning_rate=self.lr)
+        self.full_auto.compile(optimizer=optimizer_autoencoder, loss='mse', metrics='mse')

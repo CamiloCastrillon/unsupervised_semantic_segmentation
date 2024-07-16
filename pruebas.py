@@ -1,9 +1,8 @@
-number_layers = 6
+import time
+import os
+from resources.message import method_menssage
 
-for i in range(1, number_layers+1):
-    if i == 1:
-        print(f'capa inicial {i}')
-    if i == number_layers:
-        print(f'capa final {i}')
-    elif not i in [1, number_layers]:
-        print(f'capa intermedia {i}')
+def fun():
+    method_menssage(fun.__name__, 'La función hace lo que se le da la gana')
+    print('     Ejecución de la función')
+fun()
