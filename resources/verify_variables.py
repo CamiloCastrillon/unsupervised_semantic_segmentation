@@ -29,9 +29,9 @@ class VerifyErrors():
             str:    Mensaje de error o validación.
         """
         if not isinstance(var, type):
-            return error_message(f'la variable "{label}" = {var} debe ser de tipo {type.__name__}.')
+            return print(error_message(f'la variable "{label}" = {var} debe ser de tipo {type.__name__}.'))
         else:
-            return (f'  ● Verificación de tipo sobre la variable "{label}" = {var}: ✔.')
+            return print(f'  ● Verificación de tipo sobre la variable "{label}" = {var}: ✔.')
 
     def check_numeric_min_max(self, var_min:Union[int, float], var_max:Union[int, float], label_min:str, label_max:str) -> str:
         """
@@ -47,9 +47,9 @@ class VerifyErrors():
             str: Mensaje de error o validación.
         """
         if var_min >= var_max:
-            error_message(f'La variable "{label_min}" = {var_min} debe ser menor al número máximo.')
+            return print(error_message(f'La variable "{label_min}" = {var_min} debe ser menor al número máximo.'))
         else:
-            return (f'  ● Verificación de rango sobre las variables "{label_min}" = {var_min} y "{label_max}" = {var_max}: ✔.')
+            return print(f'  ● Verificación de rango sobre las variables "{label_min}" = {var_min} y "{label_max}" = {var_max}: ✔.')
 
     def check_positive(self, var: Union[int, float], label:str) -> str:
         """
@@ -63,9 +63,9 @@ class VerifyErrors():
             str: Mensaje de error o validación. 
         """
         if var <= 0:
-            return error_message(f'La variable "{label}" = {var} debe ser mayor a cero.')
+            return print(error_message(f'La variable "{label}" = {var} debe ser mayor a cero.'))
         else:
-            return (f'  ● Verificación de valor mayor a cero sobre la variable "{label}"={var}: ✔.')
+            return print(f'  ● Verificación de valor mayor a cero sobre la variable "{label}"={var}: ✔.')
         
     def check_path(self, path:str) -> str:
         """
@@ -77,9 +77,9 @@ class VerifyErrors():
             str: Mensaje de error o validación.
         """
         if not os.path.exists(path):
-           return error_message(f'La ruta "{path}" no existe.')
+           return print(error_message(f'La ruta "{path}" no existe.'))
         else:
-            return (f'  ● Verificación de existencia de la ruta "{path}": ✔.')
+            return print(f'  ● Verificación de existencia de la ruta "{path}": ✔.')
     
     def check_folder(self, path:str) -> str:
         """
@@ -91,28 +91,74 @@ class VerifyErrors():
             str: Mensaje de error o validación.
         """
         if not os.path.isdir(path):
-            return error_message(f'La ruta "{path}" debe ser una carpeta.')
+            return print(error_message(f'La ruta "{path}" debe ser una carpeta.'))
         else:
-            return (f'  ● Verificación de existencia de la carpeta "{path}": ✔.')
+            return print(f'  ● Verificación de existencia de la carpeta "{path}": ✔.')
     
-    def check_file_tipe(self, files:Union[list[str], tuple[str]]) -> str:
+    def check_file_tipe(self, path:str, files:Union[list[str], tuple[str]]) -> str:
         """
         Verifica que los archivos dentro de una lista son de tipo imágen de formato tif, jpg, jpeg, png, gif o bmp.
 
         Args:
-            files (Union[list[str], tuple[str]]): Iterable (lista o tupla) con los nombres de los archivos junto con su extensión.
+            path (str):                             La ruta donde se encuentras las imágenes para construir del dataset.
+            files (Union[list[str], tuple[str]]):   Iterable (lista o tupla) con los nombres de los archivos de imágenes junto con su extensión.
         
         Returns:
             str: Mensaje de error o validación.
         """
         extensions = ['.tif', '.jpg', '.jpeg', '.png', '.gif', '.bmp']
         if not files:
-            return error_message(f'No hay archivos dentro de la lista.')
+            return error_message(f'No hay archivos dentro del iterable.')
         for file in files:
-            ext = file[-4:].lower()
+            pth_img = os.path.join(path+file)
+            if not os.path.exists(pth_img):
+                return print(error_message(f'El archivo "{pth_img}" no fue encontrado.'))
+            ext     = pth_img[-4:].lower()
             if ext not in extensions:
-                return error_message(f'Se detectaron archivos con un formato diferente a tif, jpg, jpeg, png, gif o bmp. Especificamente "{file}".')
-        return (f'  ● Verificación de los tipos de archivos como imágenes: ✔.')
+                return print(error_message(f'Se detectó el archivo "{pth_img}" con un formato diferente a tif, jpg, jpeg, png, gif o bmp.'))
+        return print(f'  ● Verificación de los tipos de archivos como imágenes: ✔.')
+
+    def check_dimension(self, dim:int, path:str, files:Union[list[str], tuple[str]]) -> str:
+        """
+        Verifica que la dimensión de las secciones del dataset es compatible con las imágenes que se usarán para obtener las secciones.
+            ●   La dimensión no puede ser mayor a las resolución de la imágen en alto o en ancho.
+            ●   La división entre las resoluciones y la dimensión debe dar un residuo de 0.
+
+        Args:
+            dim (int):                              Dimensión de cada sección (mxm).
+            path (str):                             Ruta donde se encuentras las imágenes para construir del dataset.
+            files (Union[list[str], tuple[str]]):   Iterable (lista o tupla) con los nombres de los archivos de imágenes junto con su extensión.
+        
+        Returns:
+            str: Mensaje de error o validación.
+        """
+        for file in files:
+            pth_img = os.path.join(path+file)
+            img     = cv2.imread(pth_img)
+            w, h    = img.shape[1], img.shape[0]
+            if (w%dim or h%dim) != 0:
+                return print(error_message(f'La dimensión {dim} para las secciones no es compatible para imágenes de resolución ancho={w}px, alto={h}px.\nLa dimensión debe dar una división exacta (residuo 0), al dividirse por el alto y ancho de la resolución de las imágenes.'))
+            elif (dim>=w or dim>=h):
+                return print(error_message(f'La dimensión {dim} para las secciones no puede ser mayor a la resolución de ancho={w}px o alto={h}px de las imágnes.'))
+            else:
+                return print(f'  ● Verificación del valor de dimensión para las secciones del dataset: ✔.')
+
+    def check_arguments(self, arg:Any, types:list, var_label:str) -> str:
+        """
+        Verifica que el argumento sea uno de los valores añadido a la lista.
+
+        Args:
+            arg (Any):          Argumento a evaluar.
+            types (list):       Lista con los valores posibles que puede adoptar el argumento.
+            var_label (str):    Texto que identifica a la variable del argumento.
+        
+        Returns:
+            str: Mensaje de error o validación.
+        """
+        if arg not in list:
+            return print(error_message(f'La variable "{var_label}" debe tener alguno de los valores los valores {types}.'))
+        else:
+            return print(f'  ● Verificación de argumento para la variable {var_label}: ✔.')
 
 class VerifyWarnings():
     def __init__(self) -> None:
@@ -137,6 +183,31 @@ class VerifyWarnings():
             str: Mensaje de error o validación.
         """
         if not l_min <= var <= l_max:
-            return warning_message(f'Se recomienda que la variable "{label}" tenga valores entre {l_min} y {l_max}. No es obligatorio para la ejecución del algoritmo, pero puede afectar en los resultados del entrenamiento.')
+            return print(warning_message(f'Se recomienda que la variable "{label}" tenga valores entre {l_min} y {l_max}. No es obligatorio para la ejecución del algoritmo, pero puede afectar en los resultados del entrenamiento.'))
         else:
-            return  (f'  ● Verificación de límites para la variable "{label}": ✔.')
+            return  print(f'  ● Verificación de límites para la variable "{label}": ✔.')
+
+    def check_resolutions(self, path:str, files:Union[list[str], tuple[str]]) -> str:
+        """
+        Verifica que las imágenes que se usarán para crear el dataset tienen la misma resolución.
+
+        Args:
+            path (str):                             La ruta donde se encuentras las imágenes para construir del dataset.
+            files (Union[list[str], tuple[str]]):   Iterable (lista o tupla) con los nombres de los archivos de imágenes junto con su extensión.
+        
+        Returns:
+            str: Mensaje de error o validación.
+        """
+        resolutions = []
+        for file in files:
+            pth_img = os.path.join(path+file)
+            img     = cv2.imread(pth_img)
+            w, h    = img.shape[1], img.shape[0]
+            dim     = [w,h]
+            if not dim in resolutions:
+                resolutions.append(dim)
+        num_res     = len(resolutions)
+        if num_res > 1:
+            return print(warning_message(f'Se encontraron imágenes con {num_res} diferentes resoluciones, esto puede provocar errores con la dimensión de los datos.'))
+        else:
+            return print(f'  ● Verificación de las resoluciones de las imágenes: ✔.')

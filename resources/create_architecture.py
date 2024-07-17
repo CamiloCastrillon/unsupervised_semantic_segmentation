@@ -1,12 +1,39 @@
-import tensorflow as tf
-from keras._tf_keras.keras import layers, optimizers, initializers, models, regularizers
+from keras._tf_keras.keras import layers, optimizers, models, regularizers
 from keras._tf_keras.keras.layers import Dropout
-from keras._tf_keras.keras.callbacks import EarlyStopping
-from resources.message import error_message, warning_message, method_menssage
+from resources.verify_variables import VerifyErrors as ve, VerifyWarnings as vw
+from resources.message import method_menssage
 import random
+from typing import Union
 
 class CreateFullAuto:
-    def __init__(self, kernels, dim, number_layers, mode_l1, mode_l2, param_l1, param_l2, mode_do, param_do, lr):
+    """
+    Crea y guarda la arquitectura la arquitectura compilada y sin entrenar del full auto encoder, en un archivo h5,
+    según la estrcutura de este trabajo.
+
+    Args:
+        kernels (int):              Número de kernels con el que se crea la capa inicial.
+        dim (int):                  Dimensión m de los datos de entrada (m,m,3)
+        number_layers (int):        Número de capas del encader.
+        mode_l1 (Union[str,None]):  Modo de uso de regularización l1.
+            - 'all':    Todas las capas tendrán regularización l1.
+            - 'random': Capas elegidas aleatoriamente tendrán regularización l1.
+            - None:     Ninguna capa tendrá regularización l1.
+        mode_l2 (Union[str,None]):  Modo de uso de regularización l2.
+            - 'all':    Todas las capas tendrán regularización l2.
+            - 'random': Capas elegidas aleatoriamente tendrán regularización l2.
+            - None:     Ninguna capa tendrá regularización l1.
+        param_l1 (float):           Valor de regularización l1.
+        param_l2 (float):           Valor de regularización l2.
+        mode_do (Union[str,None]):  Modo de uso de drope out.
+            - 'all':    Todas las capas tendrán drope out.
+            - 'random': Capas elegidas aleatoriamente tendrán drope out.
+            - None:     Ninguna capa tendrá drope out.
+        lr (float):                 Valor de learning rate.
+    
+    Returns:
+        None: No se espera argumento de salida.
+    """
+    def __init__(self, kernels:int, dim:int, number_layers:int, mode_l1:Union[str,None], mode_l2:Union[str,None], param_l1:float, param_l2:float, mode_do:Union[str,None], param_do:float, lr:float) -> None:
         
         self.full_auto      = models.Sequential(name='full_autoencoder')
         self.kernels        = kernels
@@ -20,21 +47,25 @@ class CreateFullAuto:
         self.param_do       = param_do
         self.lr             = lr
 
-    def check_values(self):    
-        # Evalua la variable mode_l1, mode_l2 y mode_do
-        modes =  ['all', 'random', None]
-        if not self.mode_l1 in modes:
-            menssage = error_message('La variable modo de uso de regularización l1 debe tener los valores "all", "individual", "random", o None')
-        elif not self.mode_l2 in modes:
-            menssage = error_message('La variable modo de uso de regularización l2 debe tener los valores "all", "individual", "random", o None')
-        elif not self.mode_do in modes:
-            menssage = error_message('La variable modo de uso de regularización l2 debe tener los valores "all", "individual", "random", o None')
-        else:
-            menssage = ''
-        
-        return menssage
+    def check_values(self) -> None:
+        """
+        Verifica los posibles errores y advertencias al ingresar los argumentos de la clase CreateFullAuto.
 
-    def addreg(self):
+        Esta función no espera argumentos ni devuelve valores.
+        """
+        method_menssage(self.cheack_values.__name__, 'Verifica los posibles errores y advertencias al ingresar los argumentos de la clase CreateFullAuto')
+        modes =  ['all', 'random', None]                                                # Lista que contiene los posibles valores para las variables mode_l1, mode_l2 y mode_do
+        ve().check_arguments(self.mode_l1, modes, 'modo de uso de regularización l1')   # Evalua la variable mode_l1
+        ve().check_arguments(self.mode_l2, modes, 'modo de uso de regularización l2')   # Evalua la variable mode_l2
+        ve().check_arguments(self.mode_do, modes, 'modo de uso de drope out')           # Evalua la variable mode_do
+
+    def addreg(self) -> regularizers:
+        """
+        Devuelve las instancias de regularización de keras l1, l2 y l1l1.
+
+        Returns:
+            regularizers: Objeto regularizador.
+        """
         add_l1      = regularizers.L1(self.param_l1)
         add_l2      = regularizers.L2(self.param_l2)
         add_l1l2    = regularizers.L1L2(self.param_l2, self.param_l2)
@@ -129,13 +160,11 @@ class CreateFullAuto:
                 self.choice_do()
                 self.full_auto.add(layers.UpSampling2D((2,2)))
                 self.full_auto.add(layers.Conv2DTranspose(3, (3, 3), activation='relu', padding='same', kernel_regularizer=self.choice_reg()))
-
             else:
                 self.full_auto.add(layers.Conv2DTranspose(self.kernels, (3, 3), activation='relu', padding='same', kernel_regularizer=self.choice_reg()))
                 self.choice_do()
                 self.full_auto.add(layers.UpSampling2D((2,2)))
             self.kernels -= self.kernels//2
-
         return self.full_auto
 
     def compile_model(self):

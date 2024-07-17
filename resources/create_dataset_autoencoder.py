@@ -8,6 +8,7 @@ Fecha: Por definir
 import os
 import cv2
 import numpy as np
+from datetime import datetime
 from resources.message import method_menssage
 from resources.verify_variables import VerifyErrors as ve, VerifyWarnings as vw
 
@@ -32,6 +33,8 @@ class GenDataAutoencoder:
     def cheack_values(self):
         """
         Verifica los posibles errores y advertencias al ingresar los argumentos de la clase GenDataAutoencoder.
+
+        Esta función no espera argumentos ni devuelve valores.
         """
         method_menssage(self.cheack_values.__name__, 'Verifica los posibles errores y advertencias al ingresar los argumentos de la clase GenDataAutoencoder')
         # Evalua la las rutas de los datos y guardado
@@ -41,7 +44,7 @@ class GenDataAutoencoder:
         ve().check_folder(self.pth_save)
 
         # Evalua que existan solo archivos de imágenes en la ruta de datos
-        ve().check_file_tipe(self.imgs)
+        ve().check_file_tipe(self.pth_data, self.imgs)
 
         # Evalua la variable dim
         label_dim = 'Dimensión de las imágenes'
@@ -49,8 +52,10 @@ class GenDataAutoencoder:
         ve().check_positive(self.dim, label_dim)
         vw().check_limits(self.dim, 25, 100, label_dim)
 
-        #Falta verificar que la dimensión sea posible de aplicar en las imágenes (que no sea mayor y además que sea divisible)
-        #Falta advertir si hay imágenes con diferente dimensionalidad
+        # Evalua si hay imágenes con diferente dimensionalidad
+        vw().check_resolutions(self.pth_data, self.imgs)
+        # Evalua que la dimensión sea posible de aplicar en las imágenes (que no sea mayor y además que sea divisible)
+        ve().check_dimension(self.dim, self.pth_data, self.imgs)
 
     def get_imgs(self):
         """
@@ -103,7 +108,7 @@ class GenDataAutoencoder:
         Returns:
             None: No se espera argumento de salida.
         """
-        self.method_menssage(self.save_data.__name__, 'Convierte el conjunto de datos a un arreglo de numpy y lo guarda en la ruta dada para esto')
+        method_menssage(self.save_data.__name__, 'Convierte el conjunto de datos a un arreglo de numpy y lo guarda en la ruta dada para esto')
         dataset = np.array(stack)   # Transforma el objeto list a nd.array
         np.save(pth_save, dataset)  # Guarde el arreglo
 
@@ -111,15 +116,22 @@ class GenDataAutoencoder:
         """
         Crea un flujo de trabajo para crear el conjunto de datos aplicando los metodos de esta clase.
 
-        Esta función no ningún argumento ni devuelve ningún valor.
+        Esta función no devuelve ningún argumento ni devuelve ningún valor.
         """
         method_menssage(self.gen_data.__name__, 'Ejecuta el flujo de trabajo que genera el conjunto de datos y lo guarda')
         self.cheack_values()
         stack = []
         for data in self.get_imgs():
-            img, w, h = data                                                # Obtiene los datos para invocar make_data
-            sections = self.make_data(img, w, h, self.dim)                  # Genera las secciones (muestras)
-            stack.append(sections)                                          # Se ingresa cada sección a una lista
-        pth_save = os.path.join(self.pth_save, f'dataset{self.dim}.npy')    # Crea la ruta de guardado con el archivo npy
-        self.save_data(pth_save, stack)                                     # Todas las secciones se guardan como ndarray
+            img, w, h   = data                                                      # Obtiene los datos para invocar make_data
+            sections    = self.make_data(img, w, h, self.dim)                       # Genera las secciones (muestras)
+            stack.append(sections)                                                  # Se ingresa cada sección a una lista
+        # Genera el nombre único para el dataset
+        fecha_hora_actual       = datetime.now()                                    # Obtiene la fecha y hora actual
+        fecha_hora_formateada   = fecha_hora_actual.strftime("%d/%m/%Y %I:%M %p")   # Expresa la fecha y hora en un formato diferente
+        fecha_hora_formateada   = fecha_hora_formateada.replace(" ", "_")           # Reemplaza los espacios por guiones bajos
+        fecha_hora_formateada   = fecha_hora_formateada.replace("/", "-")           # Reemplaza los guines medios por slash
+        fecha_hora_formateada   = fecha_hora_formateada.replace(":", "-")           # Reemplaza los dos puntos por guiones medios
+        name = f'dataset{self.dim}_{fecha_hora_formateada}.npy'
+        pth_save = os.path.join(self.pth_save, name)                                # Crea la ruta de guardado con el archivo npy
+        self.save_data(pth_save, stack)                                             # Todas las secciones se guardan como ndarray
         print(f'\nDataset generado con éxito en "{pth_save}".\n')
