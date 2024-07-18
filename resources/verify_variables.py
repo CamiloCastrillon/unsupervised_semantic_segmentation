@@ -16,7 +16,7 @@ class VerifyErrors():
         satisfactoriamente la verificación.
         """
         pass
-
+    
     def check_type(self, var: Any, type: type, label: str) -> str:
         """
         Verifica que el tipo de dato ingresado coincide con el tipo de dato esperado.
@@ -159,6 +159,22 @@ class VerifyErrors():
             return print(error_message(f'La variable "{var_label}" debe tener alguno de los valores los valores {types}.'))
         else:
             return print(f'  ● Verificación de argumento para la variable {var_label}: ✔.')
+
+    def check_par(self, arg:Any, var_label:str) -> str:
+        """
+        Verifica que el argumento sea uno de los valores añadido a la lista.
+
+        Args:
+            arg (Any):       Argumento a evaluar.
+            var_label (str): Texto que identifica a la variable del argumento.
+        
+        Returns:
+            str: Mensaje de error o validación.
+        """
+        if not arg%2 == 0:
+            return print(error_message(f'La variable "{var_label}" debe ser un numero par'))
+        else:
+            return print(f'  ● Verificación de número par para la variable {var_label}: ✔.')
 
 class VerifyWarnings():
     def __init__(self) -> None:

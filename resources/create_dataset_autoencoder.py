@@ -11,6 +11,7 @@ import numpy as np
 from datetime import datetime
 from resources.message import method_menssage
 from resources.verify_variables import VerifyErrors as ve, VerifyWarnings as vw
+from general import create_path_save
 
 class GenDataAutoencoder:
     """
@@ -125,13 +126,6 @@ class GenDataAutoencoder:
             img, w, h   = data                                                      # Obtiene los datos para invocar make_data
             sections    = self.make_data(img, w, h, self.dim)                       # Genera las secciones (muestras)
             stack.append(sections)                                                  # Se ingresa cada sección a una lista
-        # Genera el nombre único para el dataset
-        fecha_hora_actual       = datetime.now()                                    # Obtiene la fecha y hora actual
-        fecha_hora_formateada   = fecha_hora_actual.strftime("%d/%m/%Y %I:%M %p")   # Expresa la fecha y hora en un formato diferente
-        fecha_hora_formateada   = fecha_hora_formateada.replace(" ", "_")           # Reemplaza los espacios por guiones bajos
-        fecha_hora_formateada   = fecha_hora_formateada.replace("/", "-")           # Reemplaza los guines medios por slash
-        fecha_hora_formateada   = fecha_hora_formateada.replace(":", "-")           # Reemplaza los dos puntos por guiones medios
-        name = f'dataset{self.dim}_{fecha_hora_formateada}.npy'
-        pth_save = os.path.join(self.pth_save, name)                                # Crea la ruta de guardado con el archivo npy
+        pth_save = create_path_save(self.pth_save, f'dataset_dim{self.dim}', 'npy') # Define la ruta donde se guardará el archivo
         self.save_data(pth_save, stack)                                             # Todas las secciones se guardan como ndarray
         print(f'\nDataset generado con éxito en "{pth_save}".\n')
