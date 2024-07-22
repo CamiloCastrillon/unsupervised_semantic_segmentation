@@ -1,6 +1,7 @@
 import os
-from typing import Any, Union
-from resources.message import error_message, warning_message
+from typing import Any, Union, Callable
+import numpy as np
+from resources.message import error_message, warning_message, method_menssage
 import cv2
 """
 El siguiente codigo contiene las funciones que verifican las variables que se ingresan de forma recurrente a los métodos
@@ -28,7 +29,9 @@ class VerifyErrors():
         Returns:
             str:    Mensaje de error o validación.
         """
-        if not isinstance(var, type):
+        if var == None:
+            return print(f'  ● Verificación de tipo sobre la variable "{label}" = {var}: ✔.')
+        elif not isinstance(var, type):
             return print(error_message(f'la variable "{label}" = {var} debe ser de tipo {type.__name__}.'))
         else:
             return print(f'  ● Verificación de tipo sobre la variable "{label}" = {var}: ✔.')
@@ -51,7 +54,7 @@ class VerifyErrors():
         else:
             return print(f'  ● Verificación de rango sobre las variables "{label_min}" = {var_min} y "{label_max}" = {var_max}: ✔.')
 
-    def check_positive(self, var: Union[int, float], label:str) -> str:
+    def check_positive(self, var: Union[int, float, None], label:str) -> str:
         """
         Verifica que el dato ingresado no sea menor o igual a cero.
 
@@ -62,7 +65,9 @@ class VerifyErrors():
         Returns:
             str: Mensaje de error o validación. 
         """
-        if var <= 0:
+        if var == None:
+            return print(f'  ● Verificación de valor mayor a cero sobre la variable "{label}"={var}: ✔.')
+        elif var <= 0:
             return print(error_message(f'La variable "{label}" = {var} debe ser mayor a cero.'))
         else:
             return print(f'  ● Verificación de valor mayor a cero sobre la variable "{label}"={var}: ✔.')
@@ -121,7 +126,7 @@ class VerifyErrors():
     def check_dimension(self, dim:int, path:str, files:Union[list[str], tuple[str]]) -> str:
         """
         Verifica que la dimensión de las secciones del dataset es compatible con las imágenes que se usarán para obtener las secciones.
-            ●   La dimensión no puede ser mayor a las resolución de la imágen en alto o en ancho.
+            ●   La dimensión no puede ser mayor a las resolución de la imágen original en alto o en ancho.
             ●   La división entre las resoluciones y la dimensión debe dar un residuo de 0.
 
         Args:
@@ -155,7 +160,7 @@ class VerifyErrors():
         Returns:
             str: Mensaje de error o validación.
         """
-        if arg not in list:
+        if arg not in types:
             return print(error_message(f'La variable "{var_label}" debe tener alguno de los valores los valores {types}.'))
         else:
             return print(f'  ● Verificación de argumento para la variable {var_label}: ✔.')
@@ -176,6 +181,66 @@ class VerifyErrors():
         else:
             return print(f'  ● Verificación de número par para la variable {var_label}: ✔.')
 
+    def check_dim_layers(self, dim:str, number_layers:str) -> str:
+        """
+        Verifica que la dimensión de los datos de entrada sea factible para reducirse el número de veces que indica
+        el número de capas en el encoder.
+
+        Args:
+            dim (str):           La dimensión m de los datos de entrada (m,m,3).
+            number_layers (str): El número de capas con el que se hará el encoder.
+        
+        Returns:
+            str: Mensaje de error o validación.
+        """
+        cheack_dim = dim
+        for i in range(number_layers):
+            cheack_dim /= 2
+            if round(cheack_dim) < 3:         
+                return print(error_message('El encoder tiene una cantidad capas superior a la esperada por la dimensión de los datos de entrenamiento.'))
+        
+        return print(f'  ● Verificación del valor de dimensión respecto a la cantidad de capas en el encoder: ✔.')
+
+    def check_dim_dataset(self, dataset:np.ndarray, dim:int) -> str:
+        """
+        Verifica que la dimensión de las imágenes del dataset en alto y ancho tenga el mismo valor que el ingresado en la variable dim.
+        Además, verifica que el dataset tenga una dimensionalidad de arreglo esperada de 5.
+
+        Args:
+            dataset (np.ndarray): Arreglo de numpy con la información de los datos de entrenamiento.
+            dim     (str): La dimensión m de los datos de entrada (m,m,3).
+        Returns:
+            str: Mensaje de error o validación.
+        """
+        dim1 = dataset.shape[2]
+        dim2 = dataset.shape[3]
+        if not (dim == dim1 and dim == dim2):
+            return print(error_message(f'La dimensión de las imágenes del dataset = ({dim1},{dim2}) no es igual a la ingresada en la variable dim = {dim}'))
+        elif not dataset.ndim == 5:
+            return print(error_message(f'El dataset ingresado tiene una dimensión {dataset.ndim}, cuando se esperan 5 de la forma:\n(número de conjuntos, número de imágenes en un conjunto, ancho de la imagen, alto de la imágen, 3)'))
+        else:
+            return print(f'  ● Verificación de igualdad entre la dimensión de las imágenes del dataset y dimensión de la variable dim: ✔.\n  ● Verificación de la dimensionalidad del dataset: ✔.')
+
+    def check_provided(self, lista:list, label:str, fun:Callable, label_fun:str) -> str:
+        """
+        Verifica que una lista de argumentos no tenga valores nulos (argumentos obligatorios para cada función).
+
+        Args:
+            list        (list): Lista con los valores a verificar.
+            label       (str): Texto que describe lo que se desea hacer con la función.
+            fun         (Callable): Función que se está evaluando.
+            label_fun   (str): Texto que describe lo que hace la función.
+
+        Returns:
+            str: Mensaje de error o validación.
+        """
+        for arg in lista:
+            if arg is None:
+                return print(error_message(f'El argumento "{arg}" tiene valor None, debe proporcionar un valor adecuado para este si desea {label}.'))
+            else:
+                pass
+        return print(method_menssage(fun.__name__, label_fun))
+
 class VerifyWarnings():
     def __init__(self) -> None:
         """
@@ -185,7 +250,7 @@ class VerifyWarnings():
         """
         pass
 
-    def check_limits(self, var:Union[int, float], l_min:Union[int, float], l_max:Union[int, float], label:str) -> str:
+    def check_limits(self, var:Union[int, float, None], l_min:Union[int, float], l_max:Union[int, float], label:str) -> str:
         """
         Verifica que una variable de tipo numérico se encuentre en determinado rango aconsejado de valores.
 
@@ -198,7 +263,9 @@ class VerifyWarnings():
         Returns:
             str: Mensaje de error o validación.
         """
-        if not l_min <= var <= l_max:
+        if var == None:
+            return  print(f'  ● Verificación de límites para la variable "{label}": ✔.')
+        elif not l_min <= var <= l_max:
             return print(warning_message(f'Se recomienda que la variable "{label}" tenga valores entre {l_min} y {l_max}. No es obligatorio para la ejecución del algoritmo, pero puede afectar en los resultados del entrenamiento.'))
         else:
             return  print(f'  ● Verificación de límites para la variable "{label}": ✔.')
