@@ -236,7 +236,7 @@ class VerifyErrors():
         """
         for arg in lista:
             if arg is None:
-                return print(error_message(f'El argumento "{arg}" tiene valor None, debe proporcionar un valor adecuado para este si desea {label}.'))
+                return print(error_message(f'Un argumento tiene valor None, debe proporcionar un valor adecuado para este si desea {label}.'))
             else:
                 pass
         return print(method_menssage(fun.__name__, label_fun))

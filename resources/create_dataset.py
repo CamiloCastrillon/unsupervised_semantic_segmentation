@@ -11,7 +11,7 @@ import numpy as np
 from datetime import datetime
 from resources.message import method_menssage
 from resources.verify_variables import VerifyErrors as ve, VerifyWarnings as vw
-from general import create_path_save
+from resources.general import create_path_save
 
 class GenDataAutoencoder:
     """
