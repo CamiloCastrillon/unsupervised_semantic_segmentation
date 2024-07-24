@@ -2,12 +2,20 @@ import os
 import optuna
 import numpy as np
 from resources.message import error_message, warning_message, method_menssage
+from typing import Union
 
 class OptimizeFullAuto:
     """
     Crea el objeto de estudio con optuna para optimizar el full auto encoder y permite consultar los parámetros obtenidos
     """
-    def __init__(self, dataset, nl_min, nl_max, dim, lr_min, lr_max, ep_min, ep_max, ba_min, ba_max, ink, rl1_min, rl1_max, rl2_min, rl2_max, do_min, do_max, esp_min, esp_max):
+    def __init__(self, dataset:np.ndarray, nl_min:int, nl_max:int, dim:int, lr_min:float, lr_max:float, ep_min:int, ep_max:int, ba_min:int, ba_max:int, ink:int, mode_l1:Union[str, None], rl1_min:float, rl1_max:float, mode_l2:Union[str, None], rl2_min:float, rl2_max:float, mode_do:Union[str, None], do_min:float, do_max:float, esp_min:int, esp_max:int) -> None:
+        """
+        Inicializa los argumentos de la clase.
+        
+        Args:
+            dataset (np.ndarray):
+            nl_min
+        """
         self.dataset    = dataset   # Dataset: Conjunto de datos de entrenamiento
         self.nl_min     = nl_min    # Minimum number of layers: Número mínimo de capas en el encoder
         self.nl_max     = nl_max    # Maximum number of layers: Número máximo de capas en el encoder
@@ -19,10 +27,13 @@ class OptimizeFullAuto:
         self.ba_min     = ba_min    # Minimum Batch Size: Tamaño de lote mínimo
         self.ba_max     = ba_max    # Maximum Batch Size: Tamaño de lote máximo
         self.ink        = ink       # Initial number of kernels: Número de kernels para iniciar el full autoencoder
+        self.mode_l1    = mode_l1
         self.rl1_min    = rl1_min   # Minimum L1 regularization: Regularización L1 mínima
         self.rl1_max    = rl1_max   # Maximum L1 regularization: Regularización L1 máxima
+        self.mode_l2    = mode_l2
         self.rl2_min    = rl2_min   # Minimum L2 regularization: Regularización L2 mínima
         self.rl2_max    = rl2_max   # Maximum L2 regularization: Regularización L2 máxima
+        self.mode_do    = mode_do
         self.do_min     = do_min    # Minumum DropOut: Porcentaje de apagado de neuronas mínimo
         self.do_max     = do_max    # Maximum DropOut:Porcentaje de apagado de neuronas máximo
         self.esp_min    = esp_min   # Minimum Early Stopping Patience: Número mínimo de epocas de espera para la para temprana
