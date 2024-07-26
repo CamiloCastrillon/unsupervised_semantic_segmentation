@@ -14,12 +14,6 @@ class CreateFullAuto:
     """
     Crea y guarda la arquitectura la arquitectura compilada y sin entrenar del full auto encoder, en un archivo h5,
     según la estructura de este trabajo.
-
-    Args:
-        pth_save_history(str): Ruta de la carpeta donde se guardará la información del entrenamiento.
-    
-    Returns:
-        None: No se espera argumento de salida.
     """
     def __init__(self) -> None:
         self.full_auto      = models.Sequential(name='full_autoencoder')
@@ -86,7 +80,6 @@ class CreateFullAuto:
             ve().check_par(kernels, 'número inicial de kernels')
             # Verifica la relación entre la variable dim y number_layers
             ve().check_dim_layers(dim, number_layers)
-            # Verifica que la dimensión de las imagenes del dataset sea igual a la ingresada en la variable dim, además,
         elif verify_errors == 'n' or verify_errors == None:
             print('No se hará validación de errores a los argumentos de la función, esto puede suscitar errores.')
         else:
@@ -399,7 +392,6 @@ class CreateFullAuto:
         ve().check_provided([dataset, patience, epochs, batch_size, dim], 'entrenar el modelo', self.train_model, 'Entrena el modelo y devuelve el historial')
         early_stopping = EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True)
         self.history = self.full_auto.fit(dataset, dataset, epochs=epochs, batch_size=batch_size, shuffle=False, validation_split=0.20, verbose=0, callbacks=[early_stopping])
-        
         return self.full_auto, self.history
     
     def save_model(self, verify_errors:Union[str,None]=None, model:models.Sequential=None, pth_save_model:str=None) -> str:

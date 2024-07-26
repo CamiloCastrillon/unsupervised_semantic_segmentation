@@ -1,4 +1,4 @@
-from resources.opti_full_auto import OptimizeFullAuto as ofa
+from resources.optimize import OptimizeFullAuto as ofa
 import numpy as np
 
 path = 'C:/camilo/resources_uss/datasets/autoencoder/dataset50.npy'
