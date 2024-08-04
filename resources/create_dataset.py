@@ -25,7 +25,7 @@ class GenDataAutoencoder:
     Returns:
         None: No se espera argumento de salida.
     """
-    def __init__(self, dim:int, pth_data:str, pth_save:str) -> None:
+    def __init__(self, dim:int=None, pth_data:str=None, pth_save:str=None) -> None:
         self.dim        = dim                               # Dimensión de las secciones de los datos de entrenamiento
         self.pth_data   = pth_data                          # Obtiene la ruta de la carpeta donde se encuentran las imagenes de entrenamiento
         self.imgs       = tuple(os.listdir(self.pth_data))  # Crea una tupla con las rutas de las imágenes
@@ -126,6 +126,7 @@ class GenDataAutoencoder:
             img, w, h   = data                                                      # Obtiene los datos para invocar make_data
             sections    = self.make_data(img, w, h, self.dim)                       # Genera las secciones (muestras)
             stack.append(sections)                                                  # Se ingresa cada sección a una lista
+        stack_simple=[item for sublist in stack for item in sublist]
         pth_save = create_path_save(self.pth_save, f'dataset_dim{self.dim}', 'npy') # Define la ruta donde se guardará el archivo
-        self.save_data(pth_save, stack)                                             # Todas las secciones se guardan como ndarray
+        self.save_data(pth_save, stack_simple)                                      # Todas las secciones se guardan como ndarray
         print(f'\nDataset generado con éxito en "{pth_save}".\n')

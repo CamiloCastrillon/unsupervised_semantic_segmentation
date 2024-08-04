@@ -1,3 +1,6 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 from keras._tf_keras.keras import layers, optimizers, models, regularizers
 from keras._tf_keras.keras.layers import Dropout
 from keras._tf_keras.keras.callbacks import EarlyStopping, History
@@ -18,7 +21,7 @@ class CreateFullAuto:
     def __init__(self) -> None:
         self.full_auto      = models.Sequential(name='full_autoencoder')
 
-    def check_create_model(self, verify_errors:Union[str,None]=None, verify_warnings:Union[str,None]=None, kernels:int=None, dim:int=None, number_layers:int=None, mode_l1:Union[str,None]=None, mode_l2:Union[str,None]=None, param_l1:float=None, param_l2:float=None, mode_do:Union[str,None]=None, param_do:float=None, lr:float=None) -> str:
+    def check_create_model(self, verify_errors:Union[str,None]=None, verify_warnings:Union[str,None]=None, kernels:int=None, dim:int=None, number_layers:int=None, mode_l1:Union[str,None]=None, mode_l2:Union[str,None]=None, param_l1:float=None, param_l2:float=None, mode_do:Union[str,None]=None, param_do:float=None) -> str:
         """
         Aplica verificaciones en los argumentos que recibe la función, deteniendo el flujo de ejecución en caso de error,
         o enviando un mensaje temporal a la consola en caso de advertencia.
@@ -49,7 +52,6 @@ class CreateFullAuto:
                 - 'all':    Todas las capas tendrán drop out.
                 - 'random': Capas elegidas aleatoriamente tendrán drop out.
                 - None:     Ninguna capa tendrá drop out.
-            lr              (float): Valor de learning rate.
 
         Returns:
             str: Confirmación de validación.
@@ -66,22 +68,29 @@ class CreateFullAuto:
             ve().check_type(kernels, int, 'número inicial de kernels')
             ve().check_type(dim, int, 'dimensión de los datos de entrada')
             ve().check_type(number_layers, int, 'número de capas en el encoder')
-            ve().check_type(param_l1, float, 'valor de regularización l1')
-            ve().check_type(param_l2, float, 'valor de regularización l2')
-            ve().check_type(param_do, float, 'valor de drop out')
-            ve().check_type(lr, float, 'taza de aprendizaje')
+            if mode_l1 is not None:
+                ve().check_type(param_l1, float, 'valor de regularización l1')
+                ve().check_positive(param_l1, 'valor de regularización l1')
+            else:
+                pass
+            if mode_l2 is not None:
+                ve().check_type(param_l2, float, 'valor de regularización l2')
+                ve().check_positive(param_l2, 'valor de regularización l2')
+            else:
+                pass
+            if mode_do is not None:
+                ve().check_type(param_do, float, 'valor de drop out')
+                ve().check_positive(param_do, 'valor de drop out')
+            else:
+                pass
             # Verifica las variables que deben ser números positivos
             ve().check_positive(kernels, 'número inicial de kernels')
-            ve().check_positive(param_l1, 'valor de regularización l1')
-            ve().check_positive(param_l2, 'valor de regularización l2')
-            ve().check_positive(param_do, 'valor de drop out')
-            ve().check_positive(lr, 'taza de aprendizaje')
             # Verifica las variables que deben ser números pares
             ve().check_par(kernels, 'número inicial de kernels')
             # Verifica la relación entre la variable dim y number_layers
             ve().check_dim_layers(dim, number_layers)
         elif verify_errors == 'n' or verify_errors == None:
-            print('No se hará validación de errores a los argumentos de la función, esto puede suscitar errores.')
+            print('   ➥ No se hará validación de errores a los argumentos de la función, esto puede suscitar errores.')
         else:
             ve().check_arguments(verify_errors, ['y', 'n', None], 'validación de errores en argumentos')
         # Determina si ejecuta o no la verificación de advertencias
@@ -89,17 +98,25 @@ class CreateFullAuto:
             method_menssage(self.check_create_model.__name__, 'Verifica las posibles advertencias al ingresar los argumentos de la función create_model')
             # Varifica que los argumentos numéricos estén dentro de límites esperados
             vw().check_limits(kernels, 8, 32, 'número inicial de kernels')
-            vw().check_limits(param_l1, 0.00001, 0.1, 'valor de regularización l1')
-            vw().check_limits(param_l2, 0.00001, 0.1, 'valor de regularización l2')
-            vw().check_limits(param_do, 0.1, 0.4, 'valor de drop out')
-            vw().check_limits(lr, 0.0001, 0.1, 'taza de aprendizaje')
-            return print(f'\nValidación completa.\n')
+            if mode_l1 is not None:
+                vw().check_limits(param_l1, 0.00001, 0.1, 'valor de regularización l1')
+            else:
+                pass
+            if mode_l2 is not None:
+                vw().check_limits(param_l2, 0.00001, 0.1, 'valor de regularización l2')
+            else:
+                pass            
+            if mode_do is not None:
+                vw().check_limits(param_do, 0.1, 0.4, 'valor de drop out')
+            else:
+                pass
+            return print(f'\n   ➥ Validación completa.\n')
         elif verify_warnings == 'n' or verify_warnings == None:
-            return print('No se hará validación de advertencias a los argumentos de la función, esto puede suscitar errores o desmejorar los resultados del entrenamiento.')
+            return print('   ➥ No se hará validación de advertencias a los argumentos de la función, esto puede suscitar errores o desmejorar los resultados del entrenamiento.')
         else:
             return ve().check_arguments(verify_warnings, ['y', 'n', None], 'validación de adavertencias en argumentos')
 
-    def check_train_model(self, verify_errors:Union[str,None]=None, dataset:np.ndarray=None, patience:int=None, epochs:int=None, batch_size:int=None, dim:int=None) -> str:
+    def check_train_model(self, verify_errors:Union[str,None]=None, model:models.Sequential=None, dataset:np.ndarray=None, patience:int=None, epochs:int=None, batch_size:int=None, dim:int=None, lr:float=None) -> str:
         """
         Aplica verificaciones en los argumentos que recibe la función, deteniendo el flujo de ejecución en caso de error.
  
@@ -108,10 +125,12 @@ class CreateFullAuto:
                 - 'y':  Si se realiza el proceso de verificación.
                 - 'n':  No se realiza el proceso de verificación.
                 - None: No se realiza el proceso de verificación.
+            model           (models.Sequential): Modelo de la red neuronal.
             dataset         (np.ndarray): Conjunto de datos de entrenamiento.
             patience        (int): Epocas de espera para la parada temprana.
             epochs          (int): Epocas totales del entrenamiento.
             batch_size      (int): Tamaño del lote de datos para el entrenamiento.
+            lr              (float): Valor de learning rate.
 
         Returns:
             str: Confirmación de validación.   
@@ -120,23 +139,26 @@ class CreateFullAuto:
         if verify_errors == 'y':    
             method_menssage(self.check_train_model.__name__, 'Verifica los posibles errores al ingresar los argumentos de la función train_model')
             # Verifica el tipo de dato
+            ve().check_type(model, models.Sequential, 'modelo de la red neuronal')
             ve().check_type(dataset, np.ndarray, 'dataset')
             ve().check_type(patience, int, 'epocas de espera para la parada temprana')
             ve().check_type(epochs, int, 'epocas de entrenamiento')
             ve().check_type(batch_size, int, 'tamaño de lote')
+            ve().check_type(lr, float, 'taza de aprendizaje')
             # Verifica las variables que deben ser números positivos
             ve().check_positive(patience, 'epocas de espera para la parada temprana')
             ve().check_positive(epochs, 'epocas de entrenamiento')
             ve().check_positive(batch_size, 'tamaño de lote')
+            ve().check_positive(lr, 'taza de aprendizaje')
             # Verifica que el dataset tenga una dimensionalidad de arreglo esperada
             ve().check_dim_dataset(dataset, dim)
-            return print(f'\nValidación completa.\n')
+            return print(f'\n   ➥ Validación completa.\n')
         elif verify_errors == 'n' or verify_errors == None:
-            return print('No se hará validación de errores a los argumentos de la función, esto puede suscitar errores.')
+            return print('   ➥ No se hará validación de errores a los argumentos de la función, esto puede suscitar errores.')
         else:
             return ve().check_arguments(verify_errors, ['y', 'n', None], 'validación de errores en argumentos')
 
-    def check_save_model(self, verify_errors:Union[str,None]=None, pth_save_model:str=None) -> str:
+    def check_save_model(self, verify_errors:Union[str,None]=None, model:models.Sequential=None, pth_save_model:str=None) -> str:
         """
         Aplica verificaciones en los argumentos que recibe la función, deteniendo el flujo de ejecución en caso de error.
 
@@ -154,14 +176,15 @@ class CreateFullAuto:
         if verify_errors == 'y':    
             method_menssage(self.check_save_model.__name__, 'Verifica los posibles errores al ingresar los argumentos de la función save_model')
             # Verifica el tipo de dato
+            ve().check_type(model, models.Sequential, 'modelo de la red neuronal')
             ve().check_type(pth_save_model, str, 'ruta de guardado para el modelo')
             # Verifica la existencia de las rutas
             ve().check_path(pth_save_model)
             # Verifica que las rutas sean carpetas
             ve().check_folder(pth_save_model)
-            return print(f'\nValidación completa.\n')
+            return print(f'\n   ➥ Validación completa.\n')
         elif verify_errors == 'n' or verify_errors == None:
-            return print('No se hará validación de errores a los argumentos de la función, esto puede suscitar errores.')
+            return print('   ➥ No se hará validación de errores a los argumentos de la función, esto puede suscitar errores.')
         else:
             return ve().check_arguments(verify_errors, ['y', 'n', None], 'validación de errores en argumentos')
 
@@ -188,9 +211,9 @@ class CreateFullAuto:
             ve().check_path(pth_save_history)
             # Verifica que las rutas sean carpetas
             ve().check_folder(pth_save_history)
-            return print(f'\nValidación completa.\n')
+            return print(f'\n   ➥ Validación completa.\n')
         elif verify_errors == 'n' or verify_errors == None:
-            return print('No se hará validación de errores a los argumentos de la función, esto puede suscitar errores.')
+            return print('   ➥ No se hará validación de errores a los argumentos de la función, esto puede suscitar errores.')
         else:
             return ve().check_arguments(verify_errors, ['y', 'n', None], 'validación de errores en argumentos')
 
@@ -210,14 +233,14 @@ class CreateFullAuto:
         """
         # Determina si ejecuta o no la verificación de errores
         if verify_errors == 'y':
-            method_menssage(self.check_save_history.__name__, 'Verifica los posibles errores al ingresar los argumentos de la función load_full_auto')
+            method_menssage(self.check_load_full_auto.__name__, 'Verifica los posibles errores al ingresar los argumentos de la función load_full_auto')
             # Verifica el tipo de dato
             ve().check_type(pth_model, str, 'ruta de guardado para los datos del entrenamiento')
             # Verifica la existencia de las rutas
             ve().check_path(pth_model)
-            return print(f'\nValidación completa.\n')
+            return print(f'\n   ➥ Validación completa.\n')
         elif verify_errors == 'n' or verify_errors == None:
-            return print('No se hará validación de errores a los argumentos de la función, esto puede suscitar errores.')
+            return print('   ➥ No se hará validación de errores a los argumentos de la función, esto puede suscitar errores.')
         else:
             return ve().check_arguments(verify_errors, ['y', 'n', None], 'validación de errores en argumentos')
 
@@ -317,7 +340,7 @@ class CreateFullAuto:
         elif mode_do == None:
             do = None
 
-    def create_model(self, verify_errors:Union[str,None]=None, verify_warnings:Union[str,None]=None, kernels:int=None, dim:int=None, number_layers:int=None, mode_l1:Union[str,None]=None, mode_l2:Union[str,None]=None, param_l1:float=None, param_l2:float=None, mode_do:Union[str,None]=None, param_do:float=None, lr:float=None) -> models.Sequential:
+    def create_model(self, verify_errors:Union[str,None]=None, verify_warnings:Union[str,None]=None, kernels:int=None, dim:int=None, number_layers:int=None, mode_l1:Union[str,None]=None, mode_l2:Union[str,None]=None, param_l1:float=None, param_l2:float=None, mode_do:Union[str,None]=None, param_do:float=None) -> models.Sequential:
         """
         Construye la arquitectura de la red dados los parámetros, guardandolos en el modelo "full_auto_encoder".
 
@@ -339,13 +362,12 @@ class CreateFullAuto:
                 - 'all':    Todas las capas tendrán drop out.
                 - 'random': Capas elegidas aleatoriamente tendrán drop out.
                 - None:     Ninguna capa tendrá drop out.
-            lr              (float): Valor de learning rate.
 
         Returns:
             models.Sequential: Objeto que contiene el modelo secuencial de ren neuronal.
         """
-        ve().check_provided([kernels, dim, number_layers, lr], 'crear el modelo', self.create_model, 'Define la arquitectura y la almacena en un modelo secuencial')
-        self.check_create_model(verify_errors, verify_warnings, kernels, dim, number_layers, mode_l1, mode_l2, param_l1, param_l2, mode_do, param_do, lr)
+        ve().check_provided([kernels, dim, number_layers], 'crear el modelo', self.create_model, 'Define la arquitectura y la almacena en un modelo secuencial')
+        self.check_create_model(verify_errors, verify_warnings, kernels, dim, number_layers, mode_l1, mode_l2, param_l1, param_l2, mode_do, param_do)
         for lay in range(1, number_layers+1):
             if lay == 1 :
                 self.full_auto.add(layers.Input(shape=(dim,dim,3)))
@@ -374,25 +396,32 @@ class CreateFullAuto:
                 self.choice_do(mode_do)
                 self.full_auto.add(layers.UpSampling2D((2,2)))
             kernels -= kernels//2
-
-        optimizer_autoencoder = optimizers.Adam(learning_rate=lr)                           # Define el optimizador
-        self.full_auto.compile(optimizer=optimizer_autoencoder, loss='mse', metrics=['mse'])  # Compila el modelo
-
         return self.full_auto
     
-    def train_model(self, verify_errors:Union[str,None]=None, dataset:np.ndarray=None, patience:int=None, epochs:int=None, batch_size:int=None, dim:int=None) -> Union[models.Sequential, History]:
+    def train_model(self, verify_errors:Union[str,None]=None, model:models.Sequential=None, dataset:np.ndarray=None, patience:int=None, epochs:int=None, batch_size:int=None, dim:int=None, lr:float=None) -> Union[models.Sequential, History]:
         """
         Define el mecanismo de parada temprana, entrena el modelo y guarda los datos del entrenamiento.
-
+        
+        Args:
+            model       (models.Sequential): Objeto que contiene el modelo secuencial de ren neuronal.
+            dataset     (np.ndarray): Arreglo de numpy con los datos de entrenamiento.
+            patience    (int): Número de epocas de espera para la para temprana.
+            epochs      (int): Número de epocas para el entrenamiento.
+            batch_size  (int): Tamaño del lote.
+            dim         (int): Dimensión de los datos de entrada.
+            lr          (float): Valor de learning rate.
+        
         Returns:
             models.sequential:  Modelo entrenado.
             History:            Información del entrenamiento.
         """
-        self.check_train_model(verify_errors, dataset, patience, epochs, batch_size, dim)
-        ve().check_provided([dataset, patience, epochs, batch_size, dim], 'entrenar el modelo', self.train_model, 'Entrena el modelo y devuelve el historial')
+        ve().check_provided([model, dataset, patience, epochs, batch_size, dim, lr], 'entrenar el modelo', self.train_model, 'Entrena el modelo y devuelve el historial')
+        self.check_train_model(verify_errors, model, dataset, patience, epochs, batch_size, dim, lr)
+        optimizer_autoencoder = optimizers.Adam(learning_rate=lr)                               # Define el optimizador
+        model.compile(optimizer=optimizer_autoencoder, loss='mse', metrics=['mse'])    # Compila el modelo
         early_stopping = EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True)
-        self.history = self.full_auto.fit(dataset, dataset, epochs=epochs, batch_size=batch_size, shuffle=False, validation_split=0.20, verbose=0, callbacks=[early_stopping])
-        return self.full_auto, self.history
+        self.history = model.fit(dataset, dataset, epochs=epochs, batch_size=batch_size, shuffle=False, validation_split=0.20, verbose=0, callbacks=[early_stopping])
+        return model, self.history
     
     def save_model(self, verify_errors:Union[str,None]=None, model:models.Sequential=None, pth_save_model:str=None) -> str:
         """
@@ -409,13 +438,13 @@ class CreateFullAuto:
         Returns:
             str: Texto de confirmación del guardado.
         """
-        ve().check_provided([model, pth_save_model], 'guardar el modelo', self.save_model, 'Guarda el modelo en un archivo keras')
-        self.check_save_model(verify_errors, pth_save_model)
+        self.check_save_model(verify_errors, model, pth_save_model)
+        ve().check_provided([model, model, pth_save_model], 'guardar el modelo', self.save_model, 'Guarda el modelo en un archivo keras')
         pth_save = create_path_save(pth_save_model, 'full_auto_encoder', 'keras')   # Define la ruta donde se guardará el archivo
         model.save(pth_save)                                                        # Guarda el modelo
         return print(f'\nModelo guardado con éxito en "{pth_save}".\n')
 
-    def save_history(self, verify_errors:Union[str,None]=None, pth_save_history:str=None) -> str:
+    def save_history(self, verify_errors:Union[str,None]=None, pth_save_history:str=None) -> models.Sequential:
         """
         Guarda la información del entrenamiento como un archivo json.
 

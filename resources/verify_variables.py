@@ -29,12 +29,10 @@ class VerifyErrors():
         Returns:
             str:    Mensaje de error o validación.
         """
-        if var == None:
-            return print(f'  ● Verificación de tipo sobre la variable "{label}" = {var}: ✔.')
-        elif not isinstance(var, type):
-            return print(error_message(f'la variable "{label}" = {var} debe ser de tipo {type.__name__}.'))
+        if not isinstance(var, type):
+            return print(error_message(f'la variable "{label}" debe ser de tipo {type.__name__}.'))
         else:
-            return print(f'  ● Verificación de tipo sobre la variable "{label}" = {var}: ✔.')
+            return print(f'  ● Verificación de tipo sobre la variable "{label}": ✅ .')
 
     def check_numeric_min_max(self, var_min:Union[int, float], var_max:Union[int, float], label_min:str, label_max:str) -> str:
         """
@@ -52,7 +50,7 @@ class VerifyErrors():
         if var_min >= var_max:
             return print(error_message(f'La variable "{label_min}" = {var_min} debe ser menor al número máximo.'))
         else:
-            return print(f'  ● Verificación de rango sobre las variables "{label_min}" = {var_min} y "{label_max}" = {var_max}: ✔.')
+            return print(f'  ● Verificación de rango sobre las variables "{label_min}" = {var_min} y "{label_max}" = {var_max}: ✅ .')
 
     def check_positive(self, var: Union[int, float, None], label:str) -> str:
         """
@@ -66,11 +64,11 @@ class VerifyErrors():
             str: Mensaje de error o validación. 
         """
         if var == None:
-            return print(f'  ● Verificación de valor mayor a cero sobre la variable "{label}"={var}: ✔.')
+            return print(f'  ● Verificación de valor mayor a cero sobre la variable "{label}"={var}: ✅ .')
         elif var <= 0:
             return print(error_message(f'La variable "{label}" = {var} debe ser mayor a cero.'))
         else:
-            return print(f'  ● Verificación de valor mayor a cero sobre la variable "{label}"={var}: ✔.')
+            return print(f'  ● Verificación de valor mayor a cero sobre la variable "{label}"={var}: ✅ .')
         
     def check_path(self, path:str) -> str:
         """
@@ -84,7 +82,7 @@ class VerifyErrors():
         if not os.path.exists(path):
            return print(error_message(f'La ruta "{path}" no existe.'))
         else:
-            return print(f'  ● Verificación de existencia de la ruta "{path}": ✔.')
+            return print(f'  ● Verificación de existencia de la ruta "{path}": ✅ .')
     
     def check_folder(self, path:str) -> str:
         """
@@ -98,7 +96,7 @@ class VerifyErrors():
         if not os.path.isdir(path):
             return print(error_message(f'La ruta "{path}" debe ser una carpeta.'))
         else:
-            return print(f'  ● Verificación de existencia de la carpeta "{path}": ✔.')
+            return print(f'  ● Verificación de existencia de la carpeta "{path}": ✅ .')
     
     def check_file_tipe(self, path:str, files:Union[list[str], tuple[str]]) -> str:
         """
@@ -121,7 +119,7 @@ class VerifyErrors():
             ext     = pth_img[-4:].lower()
             if ext not in extensions:
                 return print(error_message(f'Se detectó el archivo "{pth_img}" con un formato diferente a tif, jpg, jpeg, png, gif o bmp.'))
-        return print(f'  ● Verificación de los tipos de archivos como imágenes: ✔.')
+        return print(f'  ● Verificación de los tipos de archivos como imágenes: ✅ .')
 
     def check_dimension(self, dim:int, path:str, files:Union[list[str], tuple[str]]) -> str:
         """
@@ -146,7 +144,7 @@ class VerifyErrors():
             elif (dim>=w or dim>=h):
                 return print(error_message(f'La dimensión {dim} para las secciones no puede ser mayor a la resolución de ancho={w}px o alto={h}px de las imágnes.'))
             else:
-                return print(f'  ● Verificación del valor de dimensión para las secciones del dataset: ✔.')
+                return print(f'  ● Verificación del valor de dimensión para las secciones del dataset: ✅ .')
 
     def check_arguments(self, arg:Any, types:list, var_label:str) -> str:
         """
@@ -163,7 +161,7 @@ class VerifyErrors():
         if arg not in types:
             return print(error_message(f'La variable "{var_label}" debe tener alguno de los valores los valores {types}.'))
         else:
-            return print(f'  ● Verificación de argumento para la variable {var_label}: ✔.')
+            return print(f'  ● Verificación de argumento para la variable {var_label}: ✅ .')
 
     def check_par(self, arg:Any, var_label:str) -> str:
         """
@@ -179,7 +177,7 @@ class VerifyErrors():
         if not arg%2 == 0:
             return print(error_message(f'La variable "{var_label}" debe ser un numero par'))
         else:
-            return print(f'  ● Verificación de número par para la variable {var_label}: ✔.')
+            return print(f'  ● Verificación de número par para la variable {var_label}: ✅ .')
 
     def check_dim_layers(self, dim:str, number_layers:str) -> str:
         """
@@ -199,7 +197,7 @@ class VerifyErrors():
             if round(cheack_dim) < 3:         
                 return print(error_message('El encoder tiene una cantidad capas superior a la esperada por la dimensión de los datos de entrenamiento.'))
         
-        return print(f'  ● Verificación del valor de dimensión respecto a la cantidad de capas en el encoder: ✔.')
+        return print(f'  ● Verificación del valor de dimensión respecto a la cantidad de capas en el encoder: ✅ .')
 
     def check_dim_dataset(self, dataset:np.ndarray, dim:int) -> str:
         """
@@ -212,14 +210,14 @@ class VerifyErrors():
         Returns:
             str: Mensaje de error o validación.
         """
-        dim1 = dataset.shape[2]
-        dim2 = dataset.shape[3]
+        dim1 = dataset.shape[1]
+        dim2 = dataset.shape[2]
         if not (dim == dim1 and dim == dim2):
             return print(error_message(f'La dimensión de las imágenes del dataset = ({dim1},{dim2}) no es igual a la ingresada en la variable dim = {dim}'))
-        elif not dataset.ndim == 5:
+        elif not dataset.ndim == 4:
             return print(error_message(f'El dataset ingresado tiene una dimensión {dataset.ndim}, cuando se esperan 5 de la forma:\n(número de conjuntos, número de imágenes en un conjunto, ancho de la imagen, alto de la imágen, 3)'))
         else:
-            return print(f'  ● Verificación de igualdad entre la dimensión de las imágenes del dataset y dimensión de la variable dim: ✔.\n  ● Verificación de la dimensionalidad del dataset: ✔.')
+            return print(f'  ● Verificación de igualdad entre la dimensión de las imágenes del dataset y dimensión de la variable dim: ✅ .\n  ● Verificación de la dimensionalidad del dataset: ✅ .')
 
     def check_provided(self, lista:list, label:str, fun:Callable, label_fun:str) -> str:
         """
@@ -239,7 +237,7 @@ class VerifyErrors():
                 return print(error_message(f'Un argumento tiene valor None, debe proporcionar un valor adecuado para este si desea {label}.'))
             else:
                 pass
-        return print(method_menssage(fun.__name__, label_fun))
+        return method_menssage(fun.__name__, label_fun)
 
 class VerifyWarnings():
     def __init__(self) -> None:
@@ -264,11 +262,11 @@ class VerifyWarnings():
             str: Mensaje de error o validación.
         """
         if var == None:
-            return  print(f'  ● Verificación de límites para la variable "{label}": ✔.')
+            return  print(f'  ● Verificación de límites para la variable "{label}": ✅ .')
         elif not l_min <= var <= l_max:
             return print(warning_message(f'Se recomienda que la variable "{label}" tenga valores entre {l_min} y {l_max}. No es obligatorio para la ejecución del algoritmo, pero puede afectar en los resultados del entrenamiento.'))
         else:
-            return  print(f'  ● Verificación de límites para la variable "{label}": ✔.')
+            return  print(f'  ● Verificación de límites para la variable "{label}": ✅ .')
 
     def check_resolutions(self, path:str, files:Union[list[str], tuple[str]]) -> str:
         """
@@ -293,4 +291,4 @@ class VerifyWarnings():
         if num_res > 1:
             return print(warning_message(f'Se encontraron imágenes con {num_res} diferentes resoluciones, esto puede provocar errores con la dimensión de los datos.'))
         else:
-            return print(f'  ● Verificación de las resoluciones de las imágenes: ✔.')
+            return print(f'  ● Verificación de las resoluciones de las imágenes: ✅ .')
