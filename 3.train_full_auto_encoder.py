@@ -11,13 +11,13 @@ lr          (float): Valor de learning rate.
 """
 cfa = cfa()
 # Rutas con los datos a usar
-pth_model   = 'C:/camilo/uss/models/full_auto_encoder/full_auto_pruebas.keras'
+pth_model   = 'C:/camilo/uss/models/full_auto_encoder/full_auto_encoder_1.keras'
 pth_dataset = 'C:/camilo/uss/datasets/full_auto_encoder/dataset_dim50.npy'
 # Rutas de guardado
 pth_save_trained = 'C:/camilo/uss/models/full_auto_encoder/'
 pth_save_history = 'C:/camilo/uss/histories/full_auto_encoder/'
 # Parámetros del modelo
-model       = cfa.load_full_auto('y', pth_model)
+model       = cfa.load_any_model('y', pth_model)
 dataset     = np.load(pth_dataset)
 patience    = 10
 epochs      = 144

@@ -6,8 +6,15 @@ import numpy as np
 import cv2
 import json
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 from resources.general import create_path_save
 from resources.create_dataset import GenDataAutoencoder as gda
+from typing import Union
+import tensorflow as tf
+import logging
+tf.get_logger().setLevel('ERROR')
+mpl_logger = logging.getLogger('matplotlib')
+mpl_logger.setLevel(logging.ERROR)
 
 class AnalizeFullAuto:
     def __init__(self) -> None:
@@ -16,11 +23,14 @@ class AnalizeFullAuto:
         """
         pass
     
-    def plot_histories(self, path_history:str, path_save:str) -> str:
+    def plot_histories(self, path_history:str, save_img:Union[str,None], path_save:str) -> str:
         """
         Grafica los datos de pérdida y mse, del historial de entrenamiento desde una archivo json, muestra la gráfica y la guarda.
         
         Args:
+            save_img        (str): Define si se guarda o no la imagen generada.
+                -   'y': Se guarda la imagen.
+                -   None: No se guarda la imagen.
             path_history    (str): Ruta con el archivo json del historial.
             path_save       (str): Ruta a la carpeta donde se desea guardar la imágen.
         
@@ -83,22 +93,25 @@ class AnalizeFullAuto:
                 ha='left', va='top', transform=plt.gca().transAxes, fontsize=12, 
                 bbox=dict(facecolor='white', edgecolor='none', boxstyle='round,pad=0.5'))
 
-        entire_path_save = create_path_save(path_save, 'history', 'jpg')
-        plt.savefig(entire_path_save, dpi=300, bbox_inches='tight')
-
+        if save_img == 'y':
+            entire_path_save = create_path_save(path_save, 'history_full_auto_encoder', 'jpg')
+            plt.savefig(entire_path_save, dpi=300, bbox_inches='tight')
+        else:
+            pass
         plt.show()
-        
         return print('Figura guardada con éxito.')
     
-    def one_predict(self, path_img:str, dim:int, path_model:str, path_save_predicts:str, path_save_image:str) -> np.ndarray:
+    def analize_predict_full_auto(self, path_img:str, dim:int, path_model:str, save_img:Union[str,None], path_save_image:str) -> np.ndarray:
         """
-        Crea las predicciones del full auto encoder para una imágen y las guarda en un archivo npy.
+        Crea las predicciones del full auto encoder para una imágen, graficando la original y la resonctrucción con las predicciones.
         
         Args:
             path_img            (str): Ruta de la imágen de la cual se quieren generar predicciones.
             dim                 (int): Dimensión de las secciones que se van a evaluar.
             path_model          (str): Ruta del modelo con el cual se generarán las predicciones.
-            path_save_predicts  (str): Ruta de la carpeta donde se guardarán las predicciones.
+            save_img        (str): Define si se guarda o no la imagen generada.
+                -   'y': Se guarda la imagen.
+                -   None: No se guarda la imagen.
             path_save_image     (str): Ruta de la carpeta donde se guardará la imagen comparativa.
             
         Returns:
@@ -112,9 +125,6 @@ class AnalizeFullAuto:
         secciones = gda().make_data(img, w, h, dim)
         secciones_array = np.array(secciones)
         predicciones = full_auto.predict(secciones_array)
-        
-        entire_path_save_predicts = create_path_save(path_save_predicts, 'predicciones', 'npy')
-        np.save(entire_path_save_predicts, predicciones)
 
         large_image = np.zeros((h, w, 3), dtype=secciones_array.dtype)
         index = 0
@@ -135,8 +145,56 @@ class AnalizeFullAuto:
         axis[1].imshow(large_image)
         axis[1].set_title('Imagen Reconstruida', fontdict={'weight': 'bold', 'size': 12})
         axis[1].axis('off')
-        
-        entire_path_save_image = create_path_save(path_save_image, 'predicciones', 'jpg')
-        plt.savefig(entire_path_save_image, dpi=300, bbox_inches='tight')
+        #Guarda la imágen
+        if save_img == 'y':
+            entire_path_save_image = create_path_save(path_save_image, 'predicciones_full_auto_encoder', 'jpg')
+            plt.savefig(entire_path_save_image, dpi=300, bbox_inches='tight')
+        else:
+            pass
         plt.show()
         return print('Implementación del modelo realizada con éxito')
+
+class AnalizeSOM:
+    def __init__(self) -> None:
+        pass
+        
+    def plot_matriz(self, matriz:np.ndarray, dim_reshape:tuple, cmap_colors:Union[list[str], None], save_img:Union[str,None], path_save_image:str, name:str) -> str:
+        """
+        Grafica los datos de la matriz bmu con las dimensiones de la imagen.
+        
+        Args:
+            bmu             (np.ndarray): Conjunto de datos a graficar.
+            dim_reshape     (tuple): Dimensión alto y ancho en la que se desea reacomodar la clasificación del mapa.
+            save_img        (str): Define si se guarda o no la imagen generada.
+                -   'y': Se guarda la imagen.
+                -   None: No se guarda la imagen.
+            path_save_image (str): Ruta de la carpeta donde se guardará la imagen comparativa.
+            name            (str): Nombre de la imagen.
+            
+        Returns:
+            str: texto de confirmación de la implementación.
+        """
+        matriz_reshape = matriz.reshape(dim_reshape)
+        # Visualización básica
+
+        fig_high   = dim_reshape[0]/20
+        fig_width   = dim_reshape[1]/20
+        
+        if cmap_colors is not None:
+            cmap = mcolors.ListedColormap(cmap_colors)
+        else:
+            cmap='tab20'
+            
+        plt.rcParams['font.family'] = 'Times New Roman'
+        plt.figure(figsize=(fig_width, fig_high))
+        plt.imshow(matriz_reshape, cmap=cmap, aspect='auto')  # Utilizar 'tab20' colormap para tener más variedad de colores
+        plt.title('Segmentación Semántica de la Imagen', fontdict={'weight': 'bold', 'size': 12})
+        plt.axis('off')
+        #Guarda la imágen
+        if save_img == 'y':
+            entire_path_save_image = create_path_save(path_save_image, name, 'jpg')
+            plt.savefig(entire_path_save_image, dpi=300, bbox_inches='tight')
+        else:
+            pass
+        plt.show()
+        return ('Implementación del SOM realizada con éxito')

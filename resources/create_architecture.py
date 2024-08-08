@@ -5,20 +5,25 @@ from keras._tf_keras.keras import layers, optimizers, models, regularizers
 from keras._tf_keras.keras.layers import Dropout
 from keras._tf_keras.keras.callbacks import EarlyStopping, History
 from keras._tf_keras.keras.models import load_model
+from keras._tf_keras.keras.backend import int_shape
+from keras._tf_keras.keras import Input
 from resources.verify_variables import VerifyErrors as ve, VerifyWarnings as vw
 from resources.message import method_menssage
+from resources.general import create_path_save
 import random
 from typing import Union
 import numpy as np
 import json
-from resources.general import create_path_save
+from sompy.sompy import SOMFactory
+import pickle
+import tensorflow as tf
+tf.get_logger().setLevel('ERROR')
 
 class CreateFullAuto:
-    """
-    Crea y guarda la arquitectura la arquitectura compilada y sin entrenar del full auto encoder, en un archivo h5,
-    según la estructura de este trabajo.
-    """
     def __init__(self) -> None:
+        """
+        Contiene los métodos para crear la full auto encoder, entrenarlo, optimizar el entrenamiento y guardar modelos e historiales.
+        """
         self.full_auto      = models.Sequential(name='full_autoencoder')
 
     def check_create_model(self, verify_errors:Union[str,None]=None, verify_warnings:Union[str,None]=None, kernels:int=None, dim:int=None, number_layers:int=None, mode_l1:Union[str,None]=None, mode_l2:Union[str,None]=None, param_l1:float=None, param_l2:float=None, mode_do:Union[str,None]=None, param_do:float=None) -> str:
@@ -217,7 +222,7 @@ class CreateFullAuto:
         else:
             return ve().check_arguments(verify_errors, ['y', 'n', None], 'validación de errores en argumentos')
 
-    def check_load_full_auto(self, verify_errors:Union[str,None]=None, pth_model:str=None) -> str:
+    def check_load_any_model(self, verify_errors:Union[str,None]=None, pth_model:str=None) -> str:
         """
         Aplica verificaciones a los argumentos que recibe la función, deteniendo el flujo de ejecución en caso de error.
 
@@ -233,7 +238,7 @@ class CreateFullAuto:
         """
         # Determina si ejecuta o no la verificación de errores
         if verify_errors == 'y':
-            method_menssage(self.check_load_full_auto.__name__, 'Verifica los posibles errores al ingresar los argumentos de la función load_full_auto')
+            method_menssage(self.check_load_any_model.__name__, 'Verifica los posibles errores al ingresar los argumentos de la función load_any_model')
             # Verifica el tipo de dato
             ve().check_type(pth_model, str, 'ruta de guardado para los datos del entrenamiento')
             # Verifica la existencia de las rutas
@@ -368,34 +373,38 @@ class CreateFullAuto:
         """
         ve().check_provided([kernels, dim, number_layers], 'crear el modelo', self.create_model, 'Define la arquitectura y la almacena en un modelo secuencial')
         self.check_create_model(verify_errors, verify_warnings, kernels, dim, number_layers, mode_l1, mode_l2, param_l1, param_l2, mode_do, param_do)
-        for lay in range(1, number_layers+1):
-            if lay == 1 :
-                self.full_auto.add(layers.Input(shape=(dim,dim,3)))
-                self.full_auto.add(layers.Conv2D(kernels, (3, 3), activation='relu', padding='same', kernel_regularizer=self.choice_reg(mode_l1, mode_l2)))
-                self.choice_do(mode_do)
-                self.full_auto.add(layers.MaxPooling2D((2, 2)))
-                kernels *= 2
-            elif lay == number_layers:
-                self.full_auto.add(layers.Conv2D(kernels, (3, 3), activation='relu', padding='same', kernel_regularizer=self.choice_reg(mode_l1, mode_l2)))
-                self.choice_do(mode_do)
-                self.full_auto.add(layers.MaxPooling2D((2, 2)))
-                kernels -= kernels//2
-            elif not lay in [1, number_layers]:
-                self.full_auto.add(layers.Conv2D(kernels, (3, 3), activation='relu', padding='same', kernel_regularizer=self.choice_reg(mode_l1, mode_l2)))
-                self.choice_do(mode_do)
-                self.full_auto.add(layers.MaxPooling2D((2, 2)))
-                kernels *= 2
-        for lay in range(1, number_layers+1):
-            if lay == number_layers:
-                self.full_auto.add(layers.Conv2DTranspose(kernels, (2, 2), activation='relu', kernel_regularizer=self.choice_reg(mode_l1, mode_l2)))
-                self.choice_do(mode_do)
-                self.full_auto.add(layers.UpSampling2D((2,2)))
-                self.full_auto.add(layers.Conv2DTranspose(3, (3, 3), activation='relu', padding='same', kernel_regularizer=self.choice_reg(mode_l1, mode_l2)))
-            else:
-                self.full_auto.add(layers.Conv2DTranspose(kernels, (3, 3), activation='relu', padding='same', kernel_regularizer=self.choice_reg(mode_l1, mode_l2)))
-                self.choice_do(mode_do)
-                self.full_auto.add(layers.UpSampling2D((2,2)))
+        
+        self.full_auto.add(layers.Input(shape=(dim,dim,3)))
+        
+        for _ in range(number_layers):
+            self.full_auto.add(layers.Conv2D(kernels, (3, 3), activation='relu', padding='same', kernel_regularizer=self.choice_reg(mode_l1, mode_l2)))
+            self.choice_do(mode_do)
+            self.full_auto.add(layers.MaxPooling2D((2, 2)))
+            kernels *= 2
+        
+        self.full_auto.add(layers.Conv2D(kernels, (3, 3), activation='relu', padding='same', kernel_regularizer=self.choice_reg(mode_l1, mode_l2)))
+        self.choice_do(mode_do)
+            
+        for _ in range(number_layers):
             kernels -= kernels//2
+            self.full_auto.add(layers.Conv2DTranspose(kernels, (3, 3), activation='relu', padding='same', kernel_regularizer=self.choice_reg(mode_l1, mode_l2)))
+            self.choice_do(mode_do)
+            self.full_auto.add(layers.UpSampling2D((2,2)))
+
+        dummy_input = Input(shape=(dim, dim, 3))
+        self.full_auto(dummy_input)
+        output_shape = int_shape(self.full_auto.output)[1:3]
+        if output_shape[0] != dim or output_shape[1] != dim:
+            padding_height = dim - output_shape[0]
+            padding_width = dim - output_shape[1]
+            padding_top = padding_height // 2
+            padding_bottom = padding_height - padding_top
+            padding_left = padding_width // 2
+            padding_right = padding_width - padding_left
+            self.full_auto.add(layers.ZeroPadding2D(padding=((padding_top, padding_bottom), (padding_left, padding_right))))
+            
+        self.full_auto.add(layers.Conv2DTranspose(3, (3, 3), activation='linear', padding='same', kernel_regularizer=self.choice_reg(mode_l1, mode_l2)))
+        
         return self.full_auto
     
     def train_model(self, verify_errors:Union[str,None]=None, model:models.Sequential=None, dataset:np.ndarray=None, patience:int=None, epochs:int=None, batch_size:int=None, dim:int=None, lr:float=None) -> Union[models.Sequential, History]:
@@ -423,7 +432,7 @@ class CreateFullAuto:
         self.history = model.fit(dataset, dataset, epochs=epochs, batch_size=batch_size, shuffle=False, validation_split=0.20, verbose=0, callbacks=[early_stopping])
         return model, self.history
     
-    def save_model(self, verify_errors:Union[str,None]=None, model:models.Sequential=None, pth_save_model:str=None) -> str:
+    def save_model(self, verify_errors:Union[str,None]=None, model:models.Sequential=None, name:str=None, pth_save_model:str=None) -> str:
         """
         Guarda el modelo que se ecuentre almacenado en la variable full_auto en formato h5.
 
@@ -440,7 +449,7 @@ class CreateFullAuto:
         """
         self.check_save_model(verify_errors, model, pth_save_model)
         ve().check_provided([model, model, pth_save_model], 'guardar el modelo', self.save_model, 'Guarda el modelo en un archivo keras')
-        pth_save = create_path_save(pth_save_model, 'full_auto_encoder', 'keras')   # Define la ruta donde se guardará el archivo
+        pth_save = create_path_save(pth_save_model, name, 'keras')   # Define la ruta donde se guardará el archivo
         model.save(pth_save)                                                        # Guarda el modelo
         return print(f'\nModelo guardado con éxito en "{pth_save}".\n')
 
@@ -466,7 +475,7 @@ class CreateFullAuto:
             json.dump(history_dict, file)                                           # Guarda el archivo
         return print(f'\nHistorial de entrenamiento guardado con éxito en "{pth_save}".\n')
 
-    def load_full_auto(self, verify_errors:Union[str,None]=None, pth_model:str=None) -> str:
+    def load_any_model(self, verify_errors:Union[str,None]=None, pth_model:str=None) -> models.Sequential:
         """
         Carga un modelo desde un archivo en formato keras.
 
@@ -480,7 +489,65 @@ class CreateFullAuto:
         Returns:
             (models.Sequential): Modelo de la red neuronal.
         """
-        ve().check_provided([pth_model], 'cargar el modelo', self.load_full_auto, 'Carga el modelo desde un archivo keras')
-        self.check_load_full_auto(verify_errors, pth_model)
+        ve().check_provided([pth_model], 'cargar el modelo', self.load_any_model, 'Carga el modelo desde un archivo keras')
+        self.check_load_any_model(verify_errors, pth_model)
         model = load_model(pth_model)
         return model
+
+class CreateClassifier:
+    def __init__(self) -> None:
+        """
+        Contiene los metodos para crear el clasificador (encoder+sompy), entrenarlo, optimizar el entrenamiento y guardar modelos e historiales.
+        """
+        pass
+    
+    def create_encoder(self, path_full_auto:str) -> models.Sequential:
+        """
+        Obtiene el encoder hasta el cuello de botella del full auto encoder, lo separa y le añade una capa flatten.
+        
+        Args:
+            path_full_auto (str): Ruta donde se encuentra guardado el modelo del full auto encoder.
+            
+        Returns:
+            encoder (models.Sequential): Modelo del encoder.
+        """
+        model             = load_model(path_full_auto)      # Carga el modelo
+        index_bottleneck  = int((len(model.layers)-1)/2)    # Obtiene el índice de la capa que corresponde al cuello de botella
+        encoder_layers = model.layers[:index_bottleneck]    # Obtiene las capas del full auto encoder solo hasta el cuello de botella
+        encoder_layers.insert(0,model.inputs[0])            # Inserta a la lista de capas, la capa de entrada en la primera posición
+        encoder = models.Sequential(name='encoder')         # Define el modelo vacío del encoder
+        for layer in encoder_layers:                        # Añade las capas del encoder al modelo vacío
+            encoder.add(layer)
+        encoder.add(layers.Flatten())                       # Añade una capa de aplanamiento al final
+        return encoder
+
+    def save_sompy(self, sompy:SOMFactory, path_save:str) -> str:
+        """
+        Guarda el modelo de mapa auto organizado en un archivo pkl.
+        
+        Args:
+            sompy       (SOMFactory): Modelo del mapa auto organizado.
+            path_save   (str): ruta de la carpeta donde se guardará el modelo.
+        
+        Returns:
+            str: Texto de afirmación del guardado.
+        """
+        entire_path_save = create_path_save(path_save, 'sompy', 'pkl')
+        with open(entire_path_save, 'wb') as file:
+            pickle.dump(sompy, file)
+        return ('Archivo guardado con éxito.')
+    
+    def load_sompy(self, path_sompy:str) -> SOMFactory:
+        """
+        Guarda el modelo de mapa auto organizado en un archivo pkl.
+        
+        Args:
+            path_sompy (str): Ruta de la carpeta de donde se cargará el modelo.
+        
+        Returns:
+            str: Texto de afirmación del cargado.
+        """
+        with open(path_sompy, 'rb') as file:
+            sompy = pickle.load(file)
+            print('SOM cargado con éxito')
+        return sompy
