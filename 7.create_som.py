@@ -2,8 +2,8 @@ from sompy.sompy import SOMFactory
 from resources.create_architecture import CreateClassifier as cc
 import numpy as np
 
-sompy = SOMFactory().build(data             = np.load('C:/camilo/uss/predicts/encoder/predicts_test.npy'), 
-                           mapsize          = [10,10], 
+sompy = SOMFactory().build(data             = np.load('C:/camilo/uss/predicts/encoder/predicts_encoder_1.npy'), 
+                           mapsize          = [2,2], 
                            mask             = None, 
                            mapshape         = 'planar', 
                            lattice          = 'rect', 

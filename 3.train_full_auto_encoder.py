@@ -27,6 +27,6 @@ lr          = 0.0009634736927387456
 # Entrena el modelo y obtiene tanto el modelo como el historial
 trained_model, history = cfa.train_model('y', model, dataset, patience, epochs, batch_size, dim, lr)
 # Guarda el modelo
-cfa.save_model('y', trained_model, pth_save_trained)
+cfa.save_model('y', trained_model, 'full_auto_encoder_trained_1', pth_save_trained)
 # Guarda el historial
 cfa.save_history('y', pth_save_history)

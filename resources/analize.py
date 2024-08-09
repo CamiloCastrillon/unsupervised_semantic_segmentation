@@ -147,7 +147,7 @@ class AnalizeFullAuto:
         axis[1].axis('off')
         #Guarda la imágen
         if save_img == 'y':
-            entire_path_save_image = create_path_save(path_save_image, 'predicciones_full_auto_encoder', 'jpg')
+            entire_path_save_image = create_path_save(path_save_image, 'predicts_full_auto_encoder', 'jpg')
             plt.savefig(entire_path_save_image, dpi=300, bbox_inches='tight')
         else:
             pass

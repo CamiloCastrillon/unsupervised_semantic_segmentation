@@ -1,7 +1,7 @@
 from resources.create_architecture import CreateClassifier as cc
 
 # Carga el modelo
-path_sompy = 'C:/camilo/uss/models/som/sompy_tests.pkl'
+path_sompy = 'C:/camilo/uss/models/som/sompy_2.pkl'
 sompy = cc().load_sompy(path_sompy)
 
 # Entrena el modelo
