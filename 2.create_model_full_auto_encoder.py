@@ -3,7 +3,7 @@ from resources.create_architecture import CreateFullAuto as cfa
 verify_errors='y'
 verify_warnings='y'
 kernels=32
-dim=51
+dim=50
 number_layers=2
 mode_l1=None
 mode_l2=None

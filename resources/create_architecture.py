@@ -1,12 +1,12 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-from keras._tf_keras.keras import layers, optimizers, models, regularizers
-from keras._tf_keras.keras.layers import Dropout
-from keras._tf_keras.keras.callbacks import EarlyStopping, History
-from keras._tf_keras.keras.models import load_model
-from keras._tf_keras.keras.backend import int_shape
-from keras._tf_keras.keras import Input
+from tensorflow.keras import layers, optimizers, models, regularizers # type: ignore
+from tensorflow.keras.layers import Dropout # type: ignore
+from tensorflow.keras.callbacks import EarlyStopping, History # type: ignore
+from tensorflow.keras.models import load_model # type: ignore
+from tensorflow.keras.backend import int_shape # type: ignore
+from tensorflow.keras import Input # type: ignore
 from resources.verify_variables import VerifyErrors as ve, VerifyWarnings as vw
 from resources.message import method_menssage
 from resources.general import create_path_save

@@ -14,7 +14,7 @@ class OptimizeFullAuto:
     """
     Crea el objeto de estudio con optuna para optimizar el full auto encoder y permite consultar los parámetros obtenidos
     """
-    def __init__(self, dataset:np.ndarray=None, nl_min:int=None, nl_max:int=None, dim:int=None, lr_min:float=None, lr_max:float=None, ep_min:int=None, ep_max:int=None, ba_min:int=None, ba_max:int=None, ink:int=None, mode_l1:Union[str, None]=None, rl1_min:float=None, rl1_max:float=None, mode_l2:Union[str, None]=None, rl2_min:float=None, rl2_max:float=None, mode_do:Union[str, None]=None, do_min:float=None, do_max:float=None, esp_min:int=None, esp_max:int=None, n_trials:int=None, pth_save_params:str=None, umbral:float=None, pth_save_model:str=None, pth_save_hist:str=None) -> None:
+    def __init__(self, dataset:np.ndarray=None, nl_min:int=None, nl_max:int=None, dim:int=None, lr_min:float=None, lr_max:float=None, ep_min:int=None, ep_max:int=None, ba_min:int=None, ba_max:int=None, ink:list[int]=None, mode_l1:Union[str, None]=None, rl1_min:float=None, rl1_max:float=None, mode_l2:Union[str, None]=None, rl2_min:float=None, rl2_max:float=None, mode_do:Union[str, None]=None, do_min:float=None, do_max:float=None, esp_min:int=None, esp_max:int=None, n_trials:int=None, pth_save_params:str=None, umbral:float=None, pth_save_model:str=None, pth_save_hist:str=None) -> None:
         """
         Inicializa los argumentos de la clase.
         
@@ -29,7 +29,7 @@ class OptimizeFullAuto:
             ep_max          (int): Maximum number of epochs. Número de épocas de máximas de entrenamiento.
             ba_min          (int): Minimum Batch Size. Tamaño de lote mínimo.
             ba_max          (int): Maximum Batch Size. Tamaño de lote máximo.
-            ink             (int): Initial number of kernels: Número de kernels para iniciar el full autoencoder
+            ink_min         (list[int]): Initial number of kernels: Número de kernels para iniciar el full autoencoder.
             mode_l1         (Union[str,None]): Modo de uso de regularización l1.
                 - 'all':    Todas las capas tendrán regularización l1.
                 - 'random': Capas elegidas aleatoriamente tendrán regularización l1.
@@ -122,8 +122,9 @@ class OptimizeFullAuto:
         esp = trial.suggest_int('early_stopping', self.esp_min, self.esp_max)
         ep  = trial.suggest_int('epochs', self.ep_min, self.ep_max) 
         bs  = trial.suggest_int('batch_size', self.ba_min, self.ba_max)
+        ink = trial.suggest_categorical('kernels', self.ink)
         # Crea la arquitectura
-        model = cfa().create_model('n', 'n', self.ink, self.dim, nl, self.mode_l1, self.mode_l2, l1, l2, self.mode_do, do)
+        model = cfa().create_model('n', 'n', ink, self.dim, nl, self.mode_l1, self.mode_l2, l1, l2, self.mode_do, do)
         # Entrena la arquitectuira
         trained_model, history00 = cfa().train_model('n', model, self.dataset, esp, ep, bs, self.dim, lr)
         # Obtiene la pérdida del entrenamiento

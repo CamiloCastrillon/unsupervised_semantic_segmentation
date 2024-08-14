@@ -1,7 +1,7 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-from keras._tf_keras.keras.models import load_model
+from tensorflow.keras.models import load_model # type: ignore
 import numpy as np
 import cv2
 import json
