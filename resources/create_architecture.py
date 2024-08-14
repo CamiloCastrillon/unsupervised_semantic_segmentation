@@ -521,18 +521,19 @@ class CreateClassifier:
         encoder.add(layers.Flatten())                       # Añade una capa de aplanamiento al final
         return encoder
 
-    def save_sompy(self, sompy:SOMFactory, path_save:str) -> str:
+    def save_sompy(self, sompy:SOMFactory, name:str, path_save:str) -> str:
         """
         Guarda el modelo de mapa auto organizado en un archivo pkl.
         
         Args:
             sompy       (SOMFactory): Modelo del mapa auto organizado.
-            path_save   (str): ruta de la carpeta donde se guardará el modelo.
+            name        (str): Nombre del modelo.
+            path_save   (str): Ruta de la carpeta donde se guardará el modelo.
         
         Returns:
             str: Texto de afirmación del guardado.
         """
-        entire_path_save = create_path_save(path_save, 'sompy', 'pkl')
+        entire_path_save = create_path_save(path_save, name, 'pkl')
         with open(entire_path_save, 'wb') as file:
             pickle.dump(sompy, file)
         return ('Archivo guardado con éxito.')

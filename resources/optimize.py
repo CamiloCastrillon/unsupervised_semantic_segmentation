@@ -6,13 +6,15 @@ import numpy as np
 from typing import Union
 from resources.create_architecture import CreateFullAuto as cfa
 from resources.general import create_path_save
-from resources.verify_variables import VerifyErrors as ve, VerifyWarnings as vw
+from resources.verify_variables import VerifyErrors as ve
+from resources.create_architecture import CreateClassifier as cc
+from sompy.sompy import SOMFactory
 
 class OptimizeFullAuto:
     """
     Crea el objeto de estudio con optuna para optimizar el full auto encoder y permite consultar los parámetros obtenidos
     """
-    def __init__(self, dataset:np.ndarray=None, nl_min:int=None, nl_max:int=None, dim:int=None, lr_min:float=None, lr_max:float=None, ep_min:int=None, ep_max:int=None, ba_min:int=None, ba_max:int=None, ink:int=None, mode_l1:Union[str, None]=None, rl1_min:float=None, rl1_max:float=None, mode_l2:Union[str, None]=None, rl2_min:float=None, rl2_max:float=None, mode_do:Union[str, None]=None, do_min:float=None, do_max:float=None, esp_min:int=None, esp_max:int=None, n_trials:int=None, save_param:Union[str,None]=None, pth_save_params:str=None, umbral:float=None, pth_save_model:str=None, pth_save_hist:str=None) -> None:
+    def __init__(self, dataset:np.ndarray=None, nl_min:int=None, nl_max:int=None, dim:int=None, lr_min:float=None, lr_max:float=None, ep_min:int=None, ep_max:int=None, ba_min:int=None, ba_max:int=None, ink:int=None, mode_l1:Union[str, None]=None, rl1_min:float=None, rl1_max:float=None, mode_l2:Union[str, None]=None, rl2_min:float=None, rl2_max:float=None, mode_do:Union[str, None]=None, do_min:float=None, do_max:float=None, esp_min:int=None, esp_max:int=None, n_trials:int=None, pth_save_params:str=None, umbral:float=None, pth_save_model:str=None, pth_save_hist:str=None) -> None:
         """
         Inicializa los argumentos de la clase.
         
@@ -49,10 +51,6 @@ class OptimizeFullAuto:
             esp_min         (int): Minimum Early Stopping Patience. Número mínimo de epocas de espera para la para temprana.
             esp_max         (int): Maximum Early Stopping Patience. Número máximo de epocas de espera para la para temprana.
             n_trials        (int): Número de intentos en la optimización de hiper parámetros.
-            save_param      (Union[str,None]): Determina si se quiere o no guardar el archivo txt con los mejores parametros encontrados en el estudio.
-                - 'y':  Se guardan.
-                - 'n':  No se guardan.
-                - None: No se guardan.
             pth_save_params (str): Ruta de la carpeta de guardado para el archivo txt con los mejores parámetros.
             umbral          (float): Umbral de pérdida con el que se decide si se conserva el modelo o no.
             pth_save_model  (str): Ruta de la carpeta de guardado del modelo.
@@ -81,7 +79,6 @@ class OptimizeFullAuto:
         self.esp_min        = esp_min
         self.esp_max        = esp_max
         self.n_trials       = n_trials
-        self.save_param     = save_param
         self.pth_save_params= pth_save_params
         self.umbral         = umbral
         self.pth_save_model = pth_save_model
@@ -133,10 +130,11 @@ class OptimizeFullAuto:
         val_loss = history00.history['val_loss'][-1]
         # Si el modelo ensayado en el intento correspondiente tiene una perdida igual o menor al umbral, el modelo se guarda.
         if val_loss <= self.umbral:
-            cfa().save_model('y', trained_model, self.pth_save_model)
-            cfa().save_history('y', self.pth_save_hist)
+            cfa().save_model('y', trained_model, f'full_auto_encoder_trained_loss{val_loss}',self.pth_save_model)
+            cfa().save_history('y',self.pth_save_hist)
+            print(f'Se guardó un modelo con pérdida: {val_loss}')
         return val_loss
-    
+
     def save_params(self) -> str:
         """
         Guarda en un txt los mejores parámetros y resultados del estudio de optuna.
@@ -146,9 +144,9 @@ class OptimizeFullAuto:
         """
         ve().check_provided([self.pth_save_params], 'guardar en un txt los mejores parámetros y resultados del estudio de optuna', self.save_params, 'Guarda en un txt los mejores parámetros y resultados del estudio de optuna')
         # Crea el texto
-        text = f'Mejor valor de pérdida encontrado: {self.best_value}\nMejores parámetros para este estudio:\n'
+        text = f'Mejor valor de pérdida encontrado: {self.best_value}\n\nMejores parámetros para este estudio:\n'
         for clave, valor in self.best_params.items():
-            add = f'{clave}={valor}\n'
+            add = f'    {clave}={valor}\n'
             text = text+add
         # Crea la ruta de guardado 
         pth = create_path_save(self.pth_save_params, 'param_opti', 'txt')
@@ -169,15 +167,83 @@ class OptimizeFullAuto:
         ve().check_provided([self.n_trials], 'ejecutar el estudio de optuna', self.execute_study, 'Ejecuta el estudio de optuna')
         study = optuna.create_study(direction='minimize')   # Crea el estudio con el objetivo de minimizar la pérdida del modelo.
         study.optimize(self.create_study, n_trials=self.n_trials)       # Ejecuta el estudio.
-        result              = f'\nMejores parametros encontrados: {study.best_params}\nPéridida más baja en la configuración optima: {study.best_value}'
-        print(result)
+        print(f'\nMejores parametros encontrados: {study.best_params}\nPéridida más baja en la configuración optima: {study.best_value}')
         self.best_params    = study.best_params
         self.best_value     = study.best_value
-        # Guarda los mejores parámetros
-        if self.save_param == 'y':
-            self.save_params()
-        elif self.save_param == 'n' or self.save_param == None:
-            self.save_params()
-        else:
-            ve().check_arguments(self.save_param, [str, None], 'Indicador de si se desean o no, guardar los mejores parámetros encontrados')
+        self.save_params()
+        return print('Ejecución del estudio finalizada.')
+
+class OptimizeSOM:
+    def __init__(self, path_dataset:np.ndarray, mapsize:list[int], mask:any, mapshape:list[str], lattice:list[str], normalization:list[str], initialization:list[str], neighborhood :list[str], training :list[str], name:str, component_names:list[str], train_rough_len_min:int, train_rough_len_max:int, train_finetune_len_min:int, train_finetune_len_max:int, n_trials:int, umbral:float, path_save_params:str, path_save_models:str) -> None:
+        
+        self.dataset                = np.load(path_dataset)
+        self.mapsize                = mapsize
+        self.mask                   = mask
+        self.mapshape               = mapshape
+        self.lattice                = lattice
+        self.normalization          = normalization
+        self.initialization         = initialization
+        self.neigborhood            = neighborhood
+        self.training               = training
+        self.name                   = name
+        self.component_names        = component_names
+        self.train_rough_len_min    = train_rough_len_min
+        self.train_rough_len_max    = train_rough_len_max
+        self.train_finetune_len_min = train_finetune_len_min
+        self.train_finetune_len_max = train_finetune_len_max
+        self.n_trials               = n_trials
+        self.umbral                 = umbral
+        self.path_save_params       = path_save_params
+        self.path_save_models       = path_save_models
+
+    def create_study(self, trial) -> float:
+        
+        opt_mapshape            = trial.suggest_categorical('mapshape',self.mapshape)
+        opt_lattice             = trial.suggest_categorical('laticce', self.lattice)
+        opt_normalization       = trial.suggest_categorical('normalization', self.normalization)
+        opt_inizialization      = trial.suggest_categorical('initialization', self.initialization)
+        opt_neigborhood         = trial.suggest_categorical('neighborhood', self.neigborhood)
+        opt_training            = trial.suggest_categorical('training', self.training)
+        opt_train_rough_len     = trial.suggest_int('train_rough_len', self.train_rough_len_min, self.train_rough_len_max)
+        opt_train_finetune_len  = trial.suggest_int('train_finetune_len', self.train_finetune_len_min, self.train_finetune_len_max)
+
+        sompy = SOMFactory().build(data     = self.dataset, 
+                           mapsize          = self.mapsize, 
+                           mask             = self.mask, 
+                           mapshape         = opt_mapshape, 
+                           lattice          = opt_lattice, 
+                           normalization    = opt_normalization, 
+                           initialization   = opt_inizialization, 
+                           neighborhood     = opt_neigborhood, 
+                           training         = opt_training, 
+                           name             = self.name, 
+                           component_names  = self.component_names)
+
+        sompy.train(n_job=os.cpu_count()-4, verbose=False, train_rough_len=opt_train_rough_len, train_finetune_len=opt_train_finetune_len)
+
+        topographic_error = sompy.calculate_topographic_error()
+        if topographic_error <= self.umbral:
+            cc().save_sompy(sompy, f'sompy_trained_te{topographic_error}', self.path_save_models)
+            print(f'Modelo guardado con error topográfico: {topographic_error}')
+        return topographic_error
+
+    def save_params(self) -> str:
+        text = f'Mejor valor de error topográfico encontrado: {self.best_value}\n\nMejores parámetros para este estudio:\n'
+        for clave, valor in self.best_params.items():
+            add = f'    {clave}={valor}\n'
+            text = text+add
+        # Crea la ruta de guardado 
+        entire_path_save_params = create_path_save(self.path_save_params, 'param_opti', 'txt')
+        # Guarda el archivo txt
+        with open(entire_path_save_params, "w", encoding="utf-8") as archivo:
+            archivo.write(text)
+        return print(f'\nInformación del mejor intento del estudio guardada en:"{entire_path_save_params}".')
+
+    def execute_study(self) -> str:
+        study = optuna.create_study(direction='minimize')
+        study.optimize(self.create_study, n_trials=self.n_trials)
+        print(f'\nMejores parametros encontrados: {study.best_params}\nPéridida más baja en la configuración optima: {study.best_value}')
+        self.best_params    = study.best_params
+        self.best_value     = study.best_value
+        self.save_params()
         return print('Ejecución del estudio finalizada.')
