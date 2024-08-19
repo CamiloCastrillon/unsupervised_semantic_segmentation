@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pickle
 from PIL import Image
-import imageio
+
 
 folder_save = 'C:/camilo/imgs/aguacate_kmeans/'
 path_model  = 'C:/camilo/imgs/models/kmeans_model.pkl'

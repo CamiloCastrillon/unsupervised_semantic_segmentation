@@ -1,0 +1,47 @@
+Paso 1: Preparación de las imágenes **********COMPLETA**********
+Tareas:
+    Recolectar todas las imágenes que vas a utilizar.
+    Asegurarte de que las imágenes estén bien alineadas y cubran diferentes ángulos del objeto o escena que deseas reconstruir.
+    Organizar las imágenes en una carpeta específica para facilitar su acceso.
+
+Paso 2: Carga y preprocesamiento de las imágenes
+Tareas:
+    Cargar cada imagen en tu entorno de trabajo.
+    Convertir las imágenes a escala de grises para simplificar el procesamiento.
+    Aplicar cualquier preprocesamiento necesario, como la reducción de ruido o el ajuste de contraste.
+
+Paso 3: Detección de características
+Tareas:
+    Utilizar un algoritmo de detección de características (como SIFT o SURF) para identificar puntos clave en cada imagen.
+    Extraer descriptores de estos puntos clave, que son representaciones matemáticas de las características locales de la imagen.
+
+Paso 4: Emparejamiento de características entre imágenes
+Tareas:
+    Comparar los descriptores de puntos clave entre pares de imágenes para encontrar correspondencias.
+    Utilizar un algoritmo de emparejamiento (como FLANN) para identificar los mejores emparejamientos.
+    Filtrar los emparejamientos incorrectos utilizando técnicas como el ratio test de Lowe.
+
+Paso 5: Calibración de la cámara
+Tareas:
+    Obtener o estimar las matrices de proyección de las cámaras utilizadas para tomar las fotografías.
+    Si no tienes las matrices de proyección, puedes utilizar técnicas de calibración de cámara para estimarlas a partir de las imágenes.
+
+Paso 6: Triangulación de puntos
+Tareas:
+    Utilizar los puntos clave emparejados y las matrices de proyección para calcular las coordenadas 3D de los puntos mediante triangulación.
+    Convertir los puntos triangulados a un formato adecuado para su visualización.
+
+Paso 7: Creación de la nube de puntos
+Tareas:
+    Agrupar todos los puntos 3D obtenidos de las diferentes imágenes en una sola estructura de datos.
+    Filtrar cualquier punto erróneo o ruido que pueda haber sido introducido durante el proceso.
+
+Paso 8: Visualización de la nube de puntos
+Tareas:
+    Utilizar una biblioteca de visualización 3D (como Open3D) para cargar y visualizar la nube de puntos.
+    Ajustar los parámetros de visualización para obtener una representación clara y detallada de la nube de puntos.
+
+Paso 9: Refinamiento y post-procesamiento (opcional)
+Tareas:
+    Aplicar técnicas de post-procesamiento para mejorar la calidad de la nube de puntos, como la eliminación de puntos aislados o la suavización de la superficie.
+    Si es necesario, convertir la nube de puntos en una malla 3D para una representación más detallada.
