@@ -1,7 +1,0 @@
-20:33:17 [App     ] Build date: Aug 16 2024, 13:48:23
-20:33:17 [App     ] CPU: AMD Ryzen 5 3600 6-Core Processor               (12 cores)
-20:33:17 [App     ] RAM: 15.93GB Physical Memory 128.00TB Virtual Memory
-20:33:17 [App     ] OS: Windows 8 x64
-20:33:17 [App     ] Disk: 204.59GB (953.05GB) space
-20:33:17 [App     ] SSE & AVX compatible CPU & OS detected
-20:33:17 [App     ] Command line: ReconstructMesh -i C:/camilo/point_cloud/reconstruction_sequential/scene_dense.mvs -o C:/camilo/point_cloud/reconstruction_sequential/scene_dense.ply
