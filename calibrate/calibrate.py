@@ -61,10 +61,10 @@ calibration_data = {
     'rvecs': rvecs,
     'tvecs': tvecs
 }
-
+"""
 print('\nGuardando datos de calibración.')
 with open(path_save_calibration, 'wb') as f:
     pickle.dump(calibration_data, f)
 
 print('Parámetros de calibración guardados exitosamente.')
-
+"""

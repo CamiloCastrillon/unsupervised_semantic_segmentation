@@ -27,12 +27,12 @@ def load_calibratrion(path_calib_params):
 
     # Convertir a formato ndarray
     camera_matrix   = np.array(camera_matrix)
-
-    Fx={camera_matrix[0][0]}   
-    Cx={camera_matrix[0][2]} 
-    Fy={camera_matrix[1][1]}
-    Cy={camera_matrix[1][2]}
-
+    scale_factor = 0.00064
+    Fx=camera_matrix[0][0]
+    Cx=camera_matrix[0][2]
+    Fy=camera_matrix[1][1]
+    Cy=camera_matrix[1][2]
+    
     text_matrix = f'{Fx};0;{Cx};0;{Fy};{Cy};0;0;1'
     return text_matrix
 
@@ -63,33 +63,33 @@ def work_flow():
 
     # Inizializa la lista de imagenes
     print('   🟢 Inizializando la lista de imagenes.')
-    command     = f'openMVG_main_SfMInit_ImageListing -i {images_dir} -o {matches_dir} -k {matrix}'
-    #run_command(command)
+    command     = f'openMVG_main_SfMInit_ImageListing -i {images_dir} -o {matches_dir} -f 2.0392784704' # -f 4.5 -k {matrix}
+    run_command(command)
     
     # Obtiene las caracteristicas
     print('   🟢 Obteniendo características.')
     command = (f'openMVG_main_ComputeFeatures -i {matches_dir}sfm_data.json -o {matches_dir}')
-    #run_command(command)
+    run_command(command)
     
     # Computa las coincidencias
     print('   🟢 Observando coincidencias.')
     command = (f'openMVG_main_ComputeMatches -i {matches_dir}sfm_data.json -o {matches_dir}matches.txt -f 1')
-    #run_command(command)
+    run_command(command)
     
     # Reconstruye caracteristicas
     print('   🟢 Reconstruyendo caracteristicas.')
     command = (f'openMVG_main_SfM -i {matches_dir}sfm_data.json --match_file {matches_dir}matches.txt -o {reconstruction_dir}')
-    #run_command(command)
+    run_command(command)
     
     # Convierte a formato mvs
     print('   🟢 Convirtiendo de formato mvg a mvs.')
     command = (f'openMVG_main_openMVG2openMVS -i {reconstruction_dir}sfm_data.bin -o {reconstruction_dir}scene.mvs')
-    #run_command(command)
+    run_command(command)
     
     # Densifica la nube de puntos
     print('   🟢 Densificando nube de puntos.')
     command = (f'DensifyPointCloud {reconstruction_dir}scene.mvs')
-    #run_command(command)
+    run_command(command)
     
     # Convierte la nube de puntos a un formato diferente
     print('   🟢 Convirtiendo de formato mvs a ply.')

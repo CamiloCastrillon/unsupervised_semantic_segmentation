@@ -1,0 +1,32 @@
+16:19:07 [App     ] Build date: Aug 22 2024, 13:57:38
+16:19:07 [App     ] CPU: AMD Ryzen 7 4800H with Radeon Graphics          (16 cores)
+16:19:07 [App     ] RAM: 7.42GB Physical Memory 128.00TB Virtual Memory
+16:19:07 [App     ] OS: Windows 8 x64
+16:19:07 [App     ] Disk: 246.23GB (476.30GB) space
+16:19:07 [App     ] SSE & AVX compatible CPU & OS detected
+16:19:07 [App     ] Command line: ReconstructMesh -i C:/camilo/point_cloud/reconstruction_sequential/scene_dense.mvs -o C:/camilo/point_cloud/reconstruction_sequential/scene_dense.ply
+16:19:07 [App     ] Scene loaded (127ms):
+	2 images (2 calibrated) with a total of 3.57 MPixels (1.79 MPixels/image)
+	137246 points, 0 vertices, 0 faces
+16:19:08 [App     ] Delaunay tetrahedralization completed: 137246 points -> 65314 vertices, 377130 (+230) cells, 754375 (+345) faces (656ms)
+16:19:10 [App     ] Delaunay tetrahedras weighting completed: 377360 cells, 754720 faces (2s54ms)
+16:19:11 [App     ] Delaunay tetrahedras graph-cut completed (31855.1 flow): 55715 vertices, 111502 faces (821ms)
+16:19:12 [App     ] Mesh reconstruction completed: 55761 vertices, 111416 faces (4s593ms)
+16:19:13 [App     ] Cleaned mesh: 54330 vertices, 108367 faces (482ms)
+16:19:13 [App     ] Cleaned mesh: 54333 vertices, 108411 faces (294ms)
+16:19:13 [App     ] Cleaned mesh: 54333 vertices, 108411 faces (164ms)
+16:19:13 [App     ] Scene saved (55ms):
+	2 images (2 calibrated)
+	0 points, 54333 vertices, 108411 faces
+16:19:13 [App     ] Mesh saved: 54333 vertices, 108411 faces (16ms)
+16:19:13 [App     ] MEMORYINFO: {
+16:19:13 [App     ] 	PageFaultCount 116435
+16:19:13 [App     ] 	PeakWorkingSetSize 125.57MB
+16:19:13 [App     ] 	WorkingSetSize 13.29MB
+16:19:13 [App     ] 	QuotaPeakPagedPoolUsage 61.92KB
+16:19:13 [App     ] 	QuotaPagedPoolUsage 61.92KB
+16:19:13 [App     ] 	QuotaPeakNonPagedPoolUsage 11.02KB
+16:19:13 [App     ] 	QuotaNonPagedPoolUsage 9.95KB
+16:19:13 [App     ] 	PagefileUsage 9.13MB
+16:19:13 [App     ] 	PeakPagefileUsage 128.72MB
+16:19:13 [App     ] } ENDINFO

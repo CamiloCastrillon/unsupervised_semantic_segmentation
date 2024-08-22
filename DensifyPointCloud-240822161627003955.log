@@ -1,0 +1,45 @@
+16:16:27 [App     ] Build date: Aug 22 2024, 13:57:38
+16:16:27 [App     ] CPU: AMD Ryzen 7 4800H with Radeon Graphics          (16 cores)
+16:16:27 [App     ] RAM: 7.42GB Physical Memory 128.00TB Virtual Memory
+16:16:27 [App     ] OS: Windows 8 x64
+16:16:27 [App     ] Disk: 246.32GB (476.30GB) space
+16:16:27 [App     ] SSE & AVX compatible CPU & OS detected
+16:16:27 [App     ] Command line: DensifyPointCloud C:/camilo/point_cloud/reconstruction_sequential/scene.mvs
+16:16:27 [App     ] Camera model loaded: platform 0; camera  0; f 107.762x107.762; poses 4
+16:16:27 [App     ] Scene loaded from interface format (6ms):
+	4 images (4 calibrated) with a total of 28.58 MPixels (7.14 MPixels/image)
+	92 points, 0 vertices, 0 faces
+16:16:27 [App     ] Set the ROI by the estimated core points
+16:16:27 [App     ] Point-cloud composed of 92 points with:
+ - points info:
+	92 points inside ROI (100.00%)
+	 inside ROI track length: 2 min / 2 mean (0 std) / 2 max
+	outside ROI track length: 1.79769e+308 min / -nan(ind) mean (-nan(ind) std) / -1.79769e+308 max
+ - visibility info (184 views - 2.00 views/point):
+	        0 points with 1- views (0.00%)
+	       92 points with 2  views (100.00%)
+	        0 points with 3  views (0.00%)
+	        0 points with 4+ views (0.00%)
+	2 min / 2 mean (0 std) / 2 max
+16:16:27 [App     ] Preparing images for dense reconstruction completed: 4 images (151ms)
+16:16:27 [App     ] error: reference image   0 has not enough images in view
+16:16:27 [App     ] error: reference image   1 has not enough images in view
+16:16:27 [App     ] error: reference image   2 has not enough images in view
+16:16:27 [App     ] error: reference image   3 has not enough images in view
+16:16:27 [App     ] Selecting images for dense reconstruction completed: 0 images (1ms)
+16:16:27 [App     ] Depth-maps fused and filtered: 0 depth-maps, 0 depths, 0 points (-2147483648%%) (0ms)
+16:16:27 [App     ] Densifying point-cloud completed: 0 points (154ms)
+16:16:27 [App     ] Scene saved (0ms):
+	4 images (4 calibrated)
+	0 points, 0 vertices, 0 faces
+16:16:27 [App     ] MEMORYINFO: {
+16:16:27 [App     ] 	PageFaultCount 30165
+16:16:27 [App     ] 	PeakWorkingSetSize 52.13MB
+16:16:27 [App     ] 	WorkingSetSize 31.00MB
+16:16:27 [App     ] 	QuotaPeakPagedPoolUsage 91.72KB
+16:16:27 [App     ] 	QuotaPagedPoolUsage 82.78KB
+16:16:27 [App     ] 	QuotaPeakNonPagedPoolUsage 14.06KB
+16:16:27 [App     ] 	QuotaNonPagedPoolUsage 13.67KB
+16:16:27 [App     ] 	PagefileUsage 25.02MB
+16:16:27 [App     ] 	PeakPagefileUsage 46.43MB
+16:16:27 [App     ] } ENDINFO
