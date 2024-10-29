@@ -2,9 +2,9 @@ from resources.create_architecture import CreateFullAuto as cfa
 
 verify_errors='y'
 verify_warnings='y'
-kernels=32
-dim=50
-number_layers=2
+kernels=2
+dim=25
+number_layers=1
 mode_l1=None
 mode_l2=None
 param_l1=None

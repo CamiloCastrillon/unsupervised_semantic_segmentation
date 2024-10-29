@@ -429,8 +429,8 @@ class CreateFullAuto:
         optimizer_autoencoder = optimizers.Adam(learning_rate=lr)                               # Define el optimizador
         model.compile(optimizer=optimizer_autoencoder, loss='mse', metrics=['mse'])    # Compila el modelo
         early_stopping = EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True)
-        self.history = model.fit(dataset, dataset, epochs=epochs, batch_size=batch_size, shuffle=False, validation_split=0.20, verbose=0, callbacks=[early_stopping])
-        return model, self.history
+        history00 = model.fit(dataset, dataset, epochs=epochs, batch_size=batch_size, shuffle=False, validation_split=0.20, verbose=0, callbacks=[early_stopping])
+        return model, history00
     
     def save_model(self, verify_errors:Union[str,None]=None, model:models.Sequential=None, name:str=None, pth_save_model:str=None) -> str:
         """
@@ -453,7 +453,7 @@ class CreateFullAuto:
         model.save(pth_save)                                                        # Guarda el modelo
         return print(f'\nModelo guardado con éxito en "{pth_save}".\n')
 
-    def save_history(self, verify_errors:Union[str,None]=None, pth_save_history:str=None) -> models.Sequential:
+    def save_history(self, verify_errors:Union[str,None]=None, history00:History=None, pth_save_history:str=None) -> models.Sequential:
         """
         Guarda la información del entrenamiento como un archivo json.
 
@@ -462,6 +462,7 @@ class CreateFullAuto:
                 - 'y':  Si se realiza el proceso de verificación.
                 - 'n':  No se realiza el proceso de verificación.
                 - None: No se realiza el proceso de verificación.
+            history00:          (History): Información del entrenamiento.
             pth_save_history    (str): Ruta a la carpeta donde se guardará el modelo.
         
         Returns:
@@ -469,7 +470,7 @@ class CreateFullAuto:
         """
         ve().check_provided([pth_save_history],'guardar el historial de entrenamiento', self.save_history, 'Guarda el historial de entrenamiento en un archivo json')
         self.check_save_history(verify_errors, pth_save_history)
-        history_dict = self.history.history
+        history_dict = history00.history
         pth_save = create_path_save(pth_save_history, 'train_history', 'json') # Define la ruta donde se guardará el archivo
         with open(pth_save, 'w') as file:                                           # Abre el archivo json
             json.dump(history_dict, file)                                           # Guarda el archivo

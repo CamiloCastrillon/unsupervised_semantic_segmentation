@@ -109,7 +109,7 @@ class VerifyErrors():
         Returns:
             str: Mensaje de error o validación.
         """
-        extensions = ['.tif', '.jpg', '.jpeg', '.png', '.gif', '.bmp']
+        extensions = ['.tif', '.jpg', '.jpeg', '.png', '.gif', '.bmp', 'heic']
         if not files:
             return error_message(f'No hay archivos dentro del iterable.')
         for file in files:

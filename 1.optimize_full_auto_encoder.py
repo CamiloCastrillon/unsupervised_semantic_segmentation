@@ -2,17 +2,17 @@ from resources.optimize import OptimizeFullAuto as ofa
 import numpy as np
 
 # Define las variables
-dataset        = np.load('C:/camilo/uss/datasets/full_auto_encoder/dataset_dim50_tests.npy')
-nl_min         = 2
-nl_max         = 4
-dim            = 50
+dataset        = np.load('C:/camilo/uss/datasets/full_auto_encoder/dataset_dim25_tests.npy')
+nl_min         = 1
+nl_max         = 3
+dim            = 25
 lr_min         = 0.0001
 lr_max         = 0.001
 ep_min         = 50
 ep_max         = 300 
 ba_min         = 16
 ba_max         = 512
-ink            = [16, 32, 64]
+ink            = [2, 4, 6, 8]
 mode_l1        = None
 rl1_min        = None
 rl1_max        = None
@@ -24,7 +24,7 @@ do_min         = None
 do_max         = None
 esp_min        = 10
 esp_max        = 20
-n_trials       = 12
+n_trials       = 10
 pth_save_params= 'C:/camilo/uss/best_params/full_auto_encoder/'
 umbral         = 0.001
 pth_save_model = 'C:/camilo/uss/models/full_auto_encoder/'

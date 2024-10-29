@@ -1,5 +1,2 @@
 import os
-project_dir         = 'C:/camilo/point_cloud/'
-images_dir          = os.path.join(project_dir, "images/")
-
-print(images_dir)
+print(os.listdir('C:/camilo/uss/data/monumento_train/'))

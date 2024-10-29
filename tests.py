@@ -1,4 +1,3 @@
-import os 
+import os
 
-print(os.path.exists('C:/camilo/uss/models/full_auto_encoder/'))
-
+print(str([10,10]))

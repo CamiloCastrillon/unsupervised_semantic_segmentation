@@ -1,6 +1,6 @@
 from resources.create_dataset import GenDataAutoencoder as gda
-dim         = 50
-pth_data    = 'C:/camilo/uss/data/data_tests/'
+dim         = 56
+pth_data    = 'C:/camilo/uss/data/monumento_train/'
 #'C:/camilo/uss/datasets/full_auto_encoder/data_tests/'
 #'C:/camilo/uss/datasets/full_auto_encoder/data_aguacate/'
 pth_save    = 'C:/camilo/uss/datasets/full_auto_encoder/'

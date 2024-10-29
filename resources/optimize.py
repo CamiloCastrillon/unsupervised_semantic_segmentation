@@ -131,8 +131,8 @@ class OptimizeFullAuto:
         val_loss = history00.history['val_loss'][-1]
         # Si el modelo ensayado en el intento correspondiente tiene una perdida igual o menor al umbral, el modelo se guarda.
         if val_loss <= self.umbral:
-            cfa().save_model('y', trained_model, f'full_auto_encoder_trained_loss{val_loss}',self.pth_save_model)
-            cfa().save_history('y',self.pth_save_hist)
+            cfa().save_model('n', trained_model, f'full_auto_encoder_trained_loss{val_loss}',self.pth_save_model)
+            cfa().save_history('n', history00, self.pth_save_hist)
             print(f'Se guardó un modelo con pérdida: {val_loss}')
         return val_loss
 
@@ -175,8 +175,9 @@ class OptimizeFullAuto:
         return print('Ejecución del estudio finalizada.')
 
 class OptimizeSOM:
-    def __init__(self, path_dataset:np.ndarray, mapsize:list[int], mask:any, mapshape:list[str], lattice:list[str], normalization:list[str], initialization:list[str], neighborhood :list[str], training :list[str], name:str, component_names:list[str], train_rough_len_min:int, train_rough_len_max:int, train_finetune_len_min:int, train_finetune_len_max:int, n_trials:int, umbral:float, path_save_params:str, path_save_models:str) -> None:
+    def __init__(self, hilos:int, path_dataset:str, mapsize:list[int], mask:any, mapshape:list[str], lattice:list[str], normalization:list[str], initialization:list[str], neighborhood :list[str], training :list[str], name:str, component_names:list[str], train_rough_len_min:int, train_rough_len_max:int, train_finetune_len_min:int, train_finetune_len_max:int, n_trials:int, umbral:float, path_save_params:str, path_save_models:str) -> None:
         
+        self.hilos                  = hilos
         self.dataset                = np.load(path_dataset)
         self.mapsize                = mapsize
         self.mask                   = mask
@@ -220,11 +221,11 @@ class OptimizeSOM:
                            name             = self.name, 
                            component_names  = self.component_names)
 
-        sompy.train(n_job=os.cpu_count()-4, verbose=False, train_rough_len=opt_train_rough_len, train_finetune_len=opt_train_finetune_len)
+        sompy.train(n_job=self.hilos, verbose=False, train_rough_len=opt_train_rough_len, train_finetune_len=opt_train_finetune_len)
 
         topographic_error = sompy.calculate_topographic_error()
         if topographic_error <= self.umbral:
-            cc().save_sompy(sompy, f'sompy_trained_te{topographic_error}', self.path_save_models)
+            cc().save_sompy(sompy, f'sompy_trained_{self.mapsize}_te{topographic_error}', self.path_save_models)
             print(f'Modelo guardado con error topográfico: {topographic_error}')
         return topographic_error
 
